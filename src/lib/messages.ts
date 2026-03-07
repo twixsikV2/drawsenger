@@ -264,6 +264,10 @@ export const sendPhoto = async (chatId: string, sender: string, senderName: stri
       timestamp: Date.now(),
       type: 'photo'
     });
+
+    // Проверяем размер и удаляем старые фото если нужно
+    const { cleanupOldPhotos } = await import('./imgbb');
+    cleanupOldPhotos(database, ref, set, remove).catch(err => console.error('Cleanup error:', err));
     
     return newMessageRef.key;
   } catch (error: any) {

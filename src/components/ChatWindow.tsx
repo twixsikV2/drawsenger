@@ -69,10 +69,12 @@ export function ChatWindow({
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [showPinned, setShowPinned] = useState(false);
+  const [photoModal, setPhotoModal] = useState<{ url: string; scale: number } | null>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   const isUserScrolling = React.useRef(false);
   const hideButtonTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const contextMenuRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -114,7 +116,20 @@ export function ChatWindow({
 
   const handleContextMenu = (e: React.MouseEvent, messageId: string) => {
     e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, messageId });
+    const menuWidth = 200;
+    const menuHeight = 150;
+    let x = e.clientX;
+    let y = e.clientY;
+
+    // Проверяем границы экрана
+    if (x + menuWidth > window.innerWidth) {
+      x = window.innerWidth - menuWidth - 10;
+    }
+    if (y + menuHeight > window.innerHeight) {
+      y = window.innerHeight - menuHeight - 10;
+    }
+
+    setContextMenu({ x, y, messageId });
   };
 
   const handleDeleteClick = (messageId: string, deleteForAll: boolean) => {
@@ -336,7 +351,7 @@ export function ChatWindow({
               {message.type === 'text' && <div className="message-text">{message.text}</div>}
               {message.type === 'sticker' && <div className="message-sticker">{message.stickerId}</div>}
               {message.type === 'photo' && message.photoUrl && (
-                <div className="message-photo-container">
+                <div className="message-photo-container" onClick={() => setPhotoModal({ url: message.photoUrl!, scale: 1 })}>
                   <PhotoIcon size={16} color="var(--primary)" />
                   <img src={message.photoUrl} alt="Photo" className="message-photo" />
                 </div>
@@ -407,6 +422,7 @@ export function ChatWindow({
       )}
       {contextMenu && (
         <div
+          ref={contextMenuRef}
           className="context-menu"
           style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
         >
@@ -458,6 +474,46 @@ export function ChatWindow({
             <DeleteIcon size={16} />
             <span>Удалить у всех</span>
           </button>
+        </div>
+      )}
+      {photoModal && (
+        <div className="photo-modal-overlay" onClick={() => setPhotoModal(null)}>
+          <div className="photo-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="photo-modal-close" onClick={() => setPhotoModal(null)}>✕</button>
+            <div className="photo-modal-controls">
+              <button 
+                className="photo-control-btn"
+                onClick={() => setPhotoModal({ ...photoModal, scale: Math.max(1, photoModal.scale - 0.2) })}
+                title="Уменьшить"
+              >
+                −
+              </button>
+              <span className="photo-scale">{Math.round(photoModal.scale * 100)}%</span>
+              <button 
+                className="photo-control-btn"
+                onClick={() => setPhotoModal({ ...photoModal, scale: Math.min(3, photoModal.scale + 0.2) })}
+                title="Увеличить"
+              >
+                +
+              </button>
+              <a 
+                href={photoModal.url}
+                download="photo.png"
+                className="photo-download-btn"
+                title="Скачать"
+              >
+                ⬇
+              </a>
+            </div>
+            <div className="photo-modal-image-container">
+              <img 
+                src={photoModal.url} 
+                alt="Full size" 
+                className="photo-modal-image"
+                style={{ transform: `scale(${photoModal.scale})` }}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>

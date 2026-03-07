@@ -37,3 +37,28 @@
     background-position: 0% 50%;
   }
 }
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .app {
+    height: 100vh;
+    flex-direction: column;
+  }
+
+  .app::after {
+    width: 800px;
+    height: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    height: 100vh;
+  }
+
+  .app::after {
+    width: 600px;
+    height: 600px;
+  }
+}
