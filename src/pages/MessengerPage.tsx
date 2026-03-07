@@ -190,14 +190,18 @@ export function MessengerPage({
   const handleSendMessage = async (text: string) => {
     if (!selectedChat) return;
     try {
+      let chatId = selectedChatId;
       // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
       if (selectedChat.type === 'private' && selectedChat.members) {
         const otherUserId = selectedChat.members.find(id => id !== userId);
         if (otherUserId) {
-          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          chatId = await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          if (chatId !== selectedChatId) {
+            setSelectedChatId(chatId);
+          }
         }
       }
-      await sendMessage(selectedChatId, userId, userUsername, text);
+      await sendMessage(chatId, userId, userUsername, text);
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -206,14 +210,18 @@ export function MessengerPage({
   const handleSendSticker = async (sticker: string) => {
     if (!selectedChat) return;
     try {
+      let chatId = selectedChatId;
       // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
       if (selectedChat.type === 'private' && selectedChat.members) {
         const otherUserId = selectedChat.members.find(id => id !== userId);
         if (otherUserId) {
-          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          chatId = await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          if (chatId !== selectedChatId) {
+            setSelectedChatId(chatId);
+          }
         }
       }
-      await sendSticker(selectedChatId, userId, userUsername, sticker);
+      await sendSticker(chatId, userId, userUsername, sticker);
     } catch (error) {
       console.error('Error sending sticker:', error);
     }
@@ -222,14 +230,18 @@ export function MessengerPage({
   const handleSendVoice = async (voiceData: { duration: number; audioBlob: Blob }) => {
     if (!selectedChat) return;
     try {
+      let chatId = selectedChatId;
       // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
       if (selectedChat.type === 'private' && selectedChat.members) {
         const otherUserId = selectedChat.members.find(id => id !== userId);
         if (otherUserId) {
-          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          chatId = await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          if (chatId !== selectedChatId) {
+            setSelectedChatId(chatId);
+          }
         }
       }
-      await sendVoiceMessage(selectedChatId, userId, userUsername, voiceData.duration, voiceData.audioBlob);
+      await sendVoiceMessage(chatId, userId, userUsername, voiceData.duration, voiceData.audioBlob);
     } catch (error) {
       console.error('Error sending voice:', error);
     }
@@ -238,14 +250,18 @@ export function MessengerPage({
   const handleSendPhoto = async (file: File) => {
     if (!selectedChat) return;
     try {
+      let chatId = selectedChatId;
       // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
       if (selectedChat.type === 'private' && selectedChat.members) {
         const otherUserId = selectedChat.members.find(id => id !== userId);
         if (otherUserId) {
-          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          chatId = await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+          if (chatId !== selectedChatId) {
+            setSelectedChatId(chatId);
+          }
         }
       }
-      await sendPhoto(selectedChatId, userId, userUsername, file);
+      await sendPhoto(chatId, userId, userUsername, file);
     } catch (error: any) {
       console.error('Error sending photo:', error);
       alert(`Ошибка загрузки фото: ${error.message}`);
