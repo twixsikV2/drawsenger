@@ -1,0 +1,43 @@
+.sticker-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.sticker-picker {
+  background: var(--bg-light);
+  border-radius: 12px 12px 0 0;
+  padding: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.sticker-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 28px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+
+.sticker-btn:hover {
+  background: var(--primary);
+  transform: scale(1.15);
+  border-color: var(--primary);
+}

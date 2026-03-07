@@ -1,0 +1,162 @@
+.video-call {
+  width: 100%;
+  height: 100%;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.video-call::before {
+  content: '';
+  position: absolute;
+  bottom: 20%;
+  right: 50%;
+  width: 2200px;
+  height: 2200px;
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+  transform: translate(50%, 50%);
+}
+
+.video-call > * {
+  position: relative;
+  z-index: 1;
+}
+
+.video-container {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.avatar-large {
+  width: 140px;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  animation: pulse-avatar 2s ease-in-out infinite;
+  color: white;
+}
+
+@keyframes pulse-avatar {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+  }
+}
+
+.contact-name {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.call-status {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.video-mini {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.avatar-small {
+  font-size: 50px;
+}
+
+.call-timer-display {
+  font-size: 42px;
+  font-weight: bold;
+  margin: 20px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.call-controls {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+}
+
+.control-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.control-btn svg {
+  stroke: white;
+  fill: white;
+}
+
+.control-btn.muted,
+.control-btn.off {
+  background: rgba(255, 107, 107, 0.5);
+}
+
+.control-btn.muted:hover,
+.control-btn.off:hover {
+  background: rgba(255, 107, 107, 0.7);
+  transform: scale(1.1);
+}
+
+.control-btn.end-call {
+  background: #ff6b6b;
+}
+
+.control-btn.end-call:hover {
+  background: #ff5252;
+  transform: scale(1.15);
+}

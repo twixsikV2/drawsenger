@@ -1,0 +1,176 @@
+.message-input-container {
+  position: relative;
+}
+
+.message-input {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: rgba(26, 26, 26, 0.6);
+  backdrop-filter: blur(10px);
+  align-items: center;
+}
+
+.action-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.4s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.action-btn:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.action-btn svg {
+  stroke: white;
+}
+
+.input-field {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  transition: all 0.4s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.input-field::placeholder {
+  color: var(--text-secondary);
+}
+
+.send-btn {
+  padding: 8px 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.4s ease;
+  font-size: 14px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.send-btn svg {
+  stroke: white;
+}
+
+.voice-recording {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-sidebar);
+  border-top: 1px solid var(--border);
+}
+
+.recording-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recording-indicator {
+  font-weight: 600;
+  color: var(--danger);
+  animation: pulse 1s infinite;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.recording-waveform {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 32px;
+  min-width: 100px;
+}
+
+.recording-wave {
+  width: 3px;
+  background: var(--primary);
+  border-radius: 2px;
+  min-height: 4px;
+  transition: height 0.1s ease-out;
+}
+
+.recording-time {
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 35px;
+  text-align: right;
+  font-size: 12px;
+}
+
+.record-stop-btn {
+  padding: 8px 16px;
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.4s ease;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.record-stop-btn:hover {
+  background: #ff5252;
+  transform: scale(1.05);
+}
+
+.record-cancel-btn {
+  padding: 8px 16px;
+  background: var(--text-secondary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.4s ease;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.record-cancel-btn:hover {
+  background: #777;
+  transform: scale(1.05);
+}

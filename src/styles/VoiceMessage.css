@@ -1,0 +1,68 @@
+.voice-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.play-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.play-btn:hover {
+  transform: scale(1.15);
+}
+
+.play-btn svg {
+  stroke: currentColor;
+  fill: currentColor;
+}
+
+.voice-waveform {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.wave {
+  width: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
+}
+
+.wave.playing {
+  animation: wavePlay 0.6s ease-in-out infinite;
+}
+
+@keyframes wavePlay {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scaleY(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
+}
+
+.voice-time {
+  font-size: 11px;
+  min-width: 25px;
+  text-align: right;
+  opacity: 0.7;
+}
