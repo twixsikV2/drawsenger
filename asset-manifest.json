@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/drawsenger/static/css/main.1ba63d9d.css",
+    "main.js": "/drawsenger/static/js/main.cc5dfc38.js",
+    "index.html": "/drawsenger/index.html",
+    "main.1ba63d9d.css.map": "/drawsenger/static/css/main.1ba63d9d.css.map",
+    "main.cc5dfc38.js.map": "/drawsenger/static/js/main.cc5dfc38.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1ba63d9d.css",
+    "static/js/main.cc5dfc38.js"
+  ]
+}
