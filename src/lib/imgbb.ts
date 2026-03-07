@@ -1,45 +1,29 @@
-const IMGBB_API_KEY = '680420c6ba4e6359f73a825d3a91cb0d';
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+const CLOUD_NAME = 'dvy0f64be';
+const UPLOAD_PRESET = 'ml_default';
 
 export const uploadImageToImgBB = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
-    formData.append('image', file);
-    formData.append('key', IMGBB_API_KEY);
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
 
-    console.log('Uploading file to ImgBB:', file.name, file.size, file.type);
+    console.log('Uploading file to Cloudinary:', file.name, file.size, file.type);
 
-    const response = await fetch('https://api.imgbb.com/1/upload', {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
       method: 'POST',
       body: formData
     });
 
-    const responseText = await response.text();
-    console.log('ImgBB response status:', response.status);
-
-    if (!response.ok) {
-      console.error('ImgBB error:', response.status, responseText);
-      throw new Error(`Upload failed with status ${response.status}`);
-    }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      console.error('Failed to parse response as JSON:', responseText);
-      throw new Error('Invalid response format from ImgBB');
-    }
+    const data = await response.json();
     
-    if (!data.data || !data.data.url) {
-      console.error('No URL in response:', data);
-      throw new Error('No file URL in response');
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Ошибка загрузки в Cloudinary');
     }
 
-    const fileUrl = data.data.url;
-    console.log('File uploaded successfully:', fileUrl);
-    return fileUrl;
+    console.log('Успешно загружено:', data.secure_url);
+    return data.secure_url;
   } catch (error: any) {
-    console.error('Upload error:', error);
+    console.error('Ошибка при загрузке файла:', error);
     throw new Error(`File upload failed: ${error.message}`);
   }
 };
