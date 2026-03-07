@@ -39,7 +39,7 @@ export const registerUser = async (email: string, password: string, username: st
     return user;
   } catch (error: any) {
     const errorCode = error.code;
-    let message = error.message;
+    let message = 'Ошибка регистрации';
     
     if (errorCode === 'auth/email-already-in-use') {
       message = 'Этот email уже зарегистрирован';
@@ -47,6 +47,12 @@ export const registerUser = async (email: string, password: string, username: st
       message = 'Пароль слишком слабый (минимум 6 символов)';
     } else if (errorCode === 'auth/invalid-email') {
       message = 'Неверный формат email';
+    } else if (errorCode === 'auth/operation-not-allowed') {
+      message = 'Регистрация временно недоступна';
+    } else if (errorCode === 'auth/too-many-requests') {
+      message = 'Слишком много попыток. Попробуйте позже';
+    } else if (error.message === 'Этот ID уже занят') {
+      message = 'Этот ID уже занят';
     }
     
     throw new Error(message);
@@ -59,16 +65,20 @@ export const loginUser = async (email: string, password: string) => {
     return userCredential.user;
   } catch (error: any) {
     const errorCode = error.code;
-    let message = error.message;
+    let message = 'Ошибка входа';
     
     if (errorCode === 'auth/user-not-found') {
       message = 'Пользователь не найден';
-    } else if (errorCode === 'auth/wrong-password') {
+    } else if (errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-credential') {
       message = 'Неверный пароль';
     } else if (errorCode === 'auth/invalid-email') {
       message = 'Неверный формат email';
     } else if (errorCode === 'auth/too-many-requests') {
       message = 'Слишком много попыток входа. Попробуйте позже';
+    } else if (errorCode === 'auth/user-disabled') {
+      message = 'Аккаунт отключен';
+    } else if (errorCode === 'auth/invalid-login-credentials') {
+      message = 'Неверный email или пароль';
     }
     
     throw new Error(message);
