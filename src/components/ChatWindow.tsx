@@ -30,7 +30,7 @@ interface ChatWindowProps {
   onSendSticker: (sticker: string) => void;
   onSendVoice: (voiceData: { duration: number; url: string }) => void;
   onSendPhoto?: (file: File) => void;
-  onDeleteMessage: (messageId: string, deleteForAll: boolean) => void;
+  onDeleteMessage: (messageId: string, deleteForAll?: boolean) => void;
   onPinMessage?: (messageId: string) => void;
   onReplyMessage?: (messageId: string) => void;
   pinnedMessageId?: string;

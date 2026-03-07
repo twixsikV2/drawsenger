@@ -6,7 +6,7 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { VideoCall } from '../components/VideoCall';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
-import { sendPhoto } from '../lib/messages';
+import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage } from '../lib/messages';
 import '../styles/MessengerPage.css';
 
 type Theme = 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal';
@@ -47,6 +47,59 @@ export function MessengerPage({
   const selectedChat = chats.find(c => c.id === selectedChatId);
 
   useEffect(() => {
+    const loadChats = async () => {
+      try {
+        const firebaseChats = await getUserChats(userId);
+        if (firebaseChats.length > 0) {
+          const chatsWithMessages = await Promise.all(
+            firebaseChats.map(async (chat) => {
+              return new Promise<Chat>((resolve) => {
+                const unsubscribe = listenToMessages(chat.id, (messages) => {
+                  resolve({
+                    ...chat,
+                    messages: messages.map(msg => ({
+                      ...msg,
+                      timestamp: new Date(msg.timestamp)
+                    }))
+                  });
+                });
+              });
+            })
+          );
+          setChats(chatsWithMessages);
+          if (chatsWithMessages.length > 0) {
+            setSelectedChatId(chatsWithMessages[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading chats:', error);
+      }
+    };
+
+    loadChats();
+  }, [userId]);
+
+  useEffect(() => {
+    if (!selectedChatId) return;
+    const unsubscribe = listenToMessages(selectedChatId, (messages) => {
+      setChats(prevChats =>
+        prevChats.map(chat =>
+          chat.id === selectedChatId
+            ? {
+                ...chat,
+                messages: messages.map(msg => ({
+                  ...msg,
+                  timestamp: new Date(msg.timestamp)
+                }))
+              }
+            : chat
+        )
+      );
+    });
+    return () => unsubscribe();
+  }, [selectedChatId]);
+
+  useEffect(() => {
     if (!inCall) return;
     const interval = setInterval(() => {
       setCallDuration(d => d + 1);
@@ -74,53 +127,31 @@ export function MessengerPage({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     if (!selectedChat) return;
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      sender: userId,
-      text,
-      timestamp: new Date(),
-      type: 'text'
-    };
-    setChats(chats.map(chat =>
-      chat.id === selectedChatId
-        ? { ...chat, messages: [...chat.messages, newMessage] }
-        : chat
-    ));
-    setReplyingTo(null);
+    try {
+      await sendMessage(selectedChatId, userId, 'You', text);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
-  const handleSendSticker = (sticker: string) => {
+  const handleSendSticker = async (sticker: string) => {
     if (!selectedChat) return;
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      sender: userId,
-      timestamp: new Date(),
-      type: 'sticker',
-      stickerId: sticker
-    };
-    setChats(chats.map(chat =>
-      chat.id === selectedChatId
-        ? { ...chat, messages: [...chat.messages, newMessage] }
-        : chat
-    ));
+    try {
+      await sendSticker(selectedChatId, userId, 'You', sticker);
+    } catch (error) {
+      console.error('Error sending sticker:', error);
+    }
   };
 
-  const handleSendVoice = (voiceData: { duration: number; url: string }) => {
+  const handleSendVoice = async (voiceData: { duration: number; url: string }) => {
     if (!selectedChat) return;
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      sender: userId,
-      timestamp: new Date(),
-      type: 'voice',
-      voiceData
-    };
-    setChats(chats.map(chat =>
-      chat.id === selectedChatId
-        ? { ...chat, messages: [...chat.messages, newMessage] }
-        : chat
-    ));
+    try {
+      await sendVoiceMessage(selectedChatId, userId, 'You', voiceData.duration, voiceData.url);
+    } catch (error) {
+      console.error('Error sending voice:', error);
+    }
   };
 
   const handleSendPhoto = async (file: File) => {
@@ -155,15 +186,12 @@ export function MessengerPage({
     setInCall(false);
   };
 
-  const handleDeleteMessage = (messageId: string) => {
-    setChats(chats.map(chat =>
-      chat.id === selectedChatId
-        ? {
-            ...chat,
-            messages: chat.messages.filter(m => m.id !== messageId)
-          }
-        : chat
-    ));
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await deleteMessage(selectedChatId, messageId);
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
   };
 
   const handlePinMessage = (messageId: string) => {

@@ -225,3 +225,44 @@ export const sendPhoto = async (chatId: string, sender: string, senderName: stri
     throw new Error(error.message);
   }
 };
+
+
+// Отправить стикер
+export const sendSticker = async (chatId: string, sender: string, senderName: string, stickerId: string) => {
+  try {
+    const messagesRef = ref(database, `chats/${chatId}/messages`);
+    const newMessageRef = push(messagesRef);
+    
+    await set(newMessageRef, {
+      sender,
+      senderName,
+      stickerId,
+      timestamp: Date.now(),
+      type: 'sticker'
+    });
+    
+    return newMessageRef.key;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Отправить голосовое сообщение
+export const sendVoiceMessage = async (chatId: string, sender: string, senderName: string, duration: number, url: string) => {
+  try {
+    const messagesRef = ref(database, `chats/${chatId}/messages`);
+    const newMessageRef = push(messagesRef);
+    
+    await set(newMessageRef, {
+      sender,
+      senderName,
+      voiceData: { duration, url },
+      timestamp: Date.now(),
+      type: 'voice'
+    });
+    
+    return newMessageRef.key;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
