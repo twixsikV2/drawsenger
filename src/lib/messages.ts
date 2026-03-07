@@ -170,7 +170,7 @@ export const searchUser = async (query: string) => {
 };
 
 // Создать приватный чат с пользователем
-export const createPrivateChat = async (userId: string, otherUserId: string, otherUserName: string) => {
+export const createPrivateChat = async (userId: string, otherUserId: string, otherUserName: string): Promise<Chat | null> => {
   try {
     // Проверяем, есть ли уже чат между этими пользователями
     const snapshot = await get(ref(database, 'chats'));
