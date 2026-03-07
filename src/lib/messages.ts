@@ -1,6 +1,6 @@
-import { database, storage } from "./firebase";
+import { database } from "./firebase";
 import { ref, push, set, get, onValue, remove } from "firebase/database";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadImageToImgBB } from "./imgbb";
 
 export interface Message {
   id: string;
@@ -213,11 +213,7 @@ export const createPrivateChat = async (userId: string, otherUserId: string, oth
 // Отправить фото
 export const sendPhoto = async (chatId: string, sender: string, senderName: string, file: File) => {
   try {
-    const fileName = `${Date.now()}_${file.name}`;
-    const photoRef = storageRef(storage, `chats/${chatId}/photos/${fileName}`);
-    
-    await uploadBytes(photoRef, file);
-    const photoUrl = await getDownloadURL(photoRef);
+    const photoUrl = await uploadImageToImgBB(file);
     
     const messagesRef = ref(database, `chats/${chatId}/messages`);
     const newMessageRef = push(messagesRef);
@@ -260,11 +256,8 @@ export const sendSticker = async (chatId: string, sender: string, senderName: st
 // Отправить голосовое сообщение
 export const sendVoiceMessage = async (chatId: string, sender: string, senderName: string, duration: number, audioBlob: Blob) => {
   try {
-    const fileName = `${Date.now()}_voice.wav`;
-    const voiceRef = storageRef(storage, `chats/${chatId}/voice/${fileName}`);
-    
-    await uploadBytes(voiceRef, audioBlob);
-    const voiceUrl = await getDownloadURL(voiceRef);
+    const file = new File([audioBlob], `${Date.now()}_voice.wav`, { type: 'audio/wav' });
+    const voiceUrl = await uploadImageToImgBB(file);
     
     const messagesRef = ref(database, `chats/${chatId}/messages`);
     const newMessageRef = push(messagesRef);

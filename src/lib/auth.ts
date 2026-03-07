@@ -5,9 +5,9 @@ import {
   onAuthStateChanged,
   User
 } from "firebase/auth";
-import { auth, database, storage } from "./firebase";
+import { auth, database } from "./firebase";
 import { ref, set, get } from "firebase/database";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadImageToImgBB } from "./imgbb";
 
 export const registerUser = async (email: string, password: string, username: string) => {
   try {
@@ -99,12 +99,7 @@ export const updateUserProfile = async (userId: string, username: string, avatar
 
 export const uploadAvatar = async (userId: string, file: File) => {
   try {
-    const fileName = `${userId}_avatar.jpg`;
-    const avatarRef = storageRef(storage, `avatars/${fileName}`);
-    
-    await uploadBytes(avatarRef, file);
-    const avatarUrl = await getDownloadURL(avatarRef);
-    
+    const avatarUrl = await uploadImageToImgBB(file);
     await updateUserProfile(userId, '', avatarUrl);
     return avatarUrl;
   } catch (error: any) {
