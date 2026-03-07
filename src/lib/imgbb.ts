@@ -1,41 +1,33 @@
-const GOFILE_TOKEN = 'qr3DHIcorZ7NJ5XdErpRHzILbQBI4eYb';
-
 export const uploadImageToImgBB = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('token', GOFILE_TOKEN);
+    formData.append('fileToUpload', file);
+    formData.append('reqtype', 'fileupload');
 
-    console.log('Uploading file to Gofile.io:', file.name, file.size, file.type);
+    console.log('Uploading file to Catbox.moe:', file.name, file.size, file.type);
 
-    const response = await fetch('https://api.gofile.io/uploadFile', {
+    const response = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
       body: formData
     });
 
     const responseText = await response.text();
-    console.log('Gofile.io response status:', response.status);
-    console.log('Gofile.io response:', responseText);
+    console.log('Catbox.moe response status:', response.status);
+    console.log('Catbox.moe response:', responseText);
 
     if (!response.ok) {
-      console.error('Gofile.io error:', response.status, responseText);
+      console.error('Catbox.moe error:', response.status, responseText);
       throw new Error(`Upload failed with status ${response.status}`);
     }
 
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      console.error('Failed to parse response as JSON:', responseText);
-      throw new Error('Invalid response format from Gofile.io');
-    }
+    // Catbox возвращает просто URL в текстовом формате
+    const fileUrl = responseText.trim();
     
-    if (!data.data || !data.data.fileUrl) {
-      console.error('No URL in response:', data);
-      throw new Error('No file URL in response');
+    if (!fileUrl || !fileUrl.startsWith('http')) {
+      console.error('Invalid URL in response:', fileUrl);
+      throw new Error('Invalid file URL in response');
     }
 
-    const fileUrl = data.data.fileUrl;
     console.log('File uploaded successfully:', fileUrl);
     return fileUrl;
   } catch (error: any) {
