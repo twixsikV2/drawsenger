@@ -88,3 +88,142 @@ export const cleanupOldPhotos = async (database: any, ref: any, set: any, remove
     console.error('Ошибка при очистке фото:', error);
   }
 };
+
+
+export const cleanupLargeMessages = async (database: any, ref: any, remove: any) => {
+  try {
+    const chatsRef = ref(database, 'chats');
+    const snapshot = await new Promise<any>((resolve) => {
+      const listener = chatsRef.on('value', (snap: any) => {
+        chatsRef.off('value', listener);
+        resolve(snap);
+      });
+    });
+
+    if (!snapshot.val()) return;
+
+    const chats = snapshot.val();
+    let totalSize = 0;
+    const allMessages: any[] = [];
+
+    // Собираем все сообщения с их размерами
+    for (const chatId in chats) {
+      const messages = chats[chatId].messages || {};
+      for (const msgId in messages) {
+        const msg = messages[msgId];
+        let size = 0;
+        
+        if (msg.photoUrl) {
+          size = msg.photoUrl.length;
+        } else if (msg.voiceData?.url) {
+          size = msg.voiceData.url.length;
+        } else if (msg.text) {
+          size = msg.text.length;
+        }
+        
+        if (size > 0) {
+          totalSize += size;
+          allMessages.push({
+            chatId,
+            msgId,
+            size,
+            timestamp: msg.timestamp || 0,
+            type: msg.type
+          });
+        }
+      }
+    }
+
+    console.log(`Общий размер сообщений: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
+
+    // Если превышено 950MB, удаляем самые большие старые сообщения
+    if (totalSize > 950 * 1024 * 1024) {
+      console.log('Превышен лимит 950MB, удаляю большие старые сообщения...');
+      
+      // Сортируем по размеру (большие первыми) и времени (старые первыми)
+      allMessages.sort((a, b) => {
+        if (b.size !== a.size) return b.size - a.size;
+        return a.timestamp - b.timestamp;
+      });
+      
+      let deletedSize = 0;
+
+      for (const msg of allMessages) {
+        const msgRef = ref(database, `chats/${msg.chatId}/messages/${msg.msgId}`);
+        await remove(msgRef);
+        deletedSize += msg.size;
+        totalSize -= msg.size;
+
+        console.log(`Удалено сообщение (${(msg.size / 1024 / 1024).toFixed(2)}MB), осталось: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
+
+        // Если очистили до 30MB, останавливаемся
+        if (totalSize <= 30 * 1024 * 1024) {
+          break;
+        }
+      }
+
+      console.log(`Очистка завершена. Удалено: ${(deletedSize / 1024 / 1024).toFixed(2)}MB`);
+    }
+  } catch (error) {
+    console.error('Ошибка при очистке сообщений:', error);
+  }
+};
+
+export const scheduleWeeklyCleanup = (database: any, ref: any, remove: any) => {
+  // Функция для удаления больших сообщений старше 5 часов
+  const cleanupOldLargeMessages = async () => {
+    try {
+      const chatsRef = ref(database, 'chats');
+      const snapshot = await new Promise<any>((resolve) => {
+        const listener = chatsRef.on('value', (snap: any) => {
+          chatsRef.off('value', listener);
+          resolve(snap);
+        });
+      });
+
+      if (!snapshot.val()) return;
+
+      const chats = snapshot.val();
+      const fiveHoursAgo = Date.now() - 5 * 60 * 60 * 1000;
+      let deletedCount = 0;
+      let deletedSize = 0;
+
+      // Ищем большие сообщения старше 5 часов
+      for (const chatId in chats) {
+        const messages = chats[chatId].messages || {};
+        for (const msgId in messages) {
+          const msg = messages[msgId];
+          let size = 0;
+          
+          if (msg.photoUrl) {
+            size = msg.photoUrl.length;
+          } else if (msg.voiceData?.url) {
+            size = msg.voiceData.url.length;
+          }
+          
+          // Удаляем если это большое сообщение (фото или голос) и оно старше 5 часов
+          if (size > 0 && msg.timestamp < fiveHoursAgo) {
+            const msgRef = ref(database, `chats/${chatId}/messages/${msgId}`);
+            await remove(msgRef);
+            deletedCount++;
+            deletedSize += size;
+            console.log(`Еженедельная очистка: удалено сообщение (${(size / 1024 / 1024).toFixed(2)}MB)`);
+          }
+        }
+      }
+
+      if (deletedCount > 0) {
+        console.log(`Еженедельная очистка завершена. Удалено ${deletedCount} сообщений (${(deletedSize / 1024 / 1024).toFixed(2)}MB)`);
+      }
+    } catch (error) {
+      console.error('Ошибка при еженедельной очистке:', error);
+    }
+  };
+
+  // Запускаем очистку каждую неделю (7 дней = 604800000 мс)
+  const weekInMs = 7 * 24 * 60 * 60 * 1000;
+  setInterval(cleanupOldLargeMessages, weekInMs);
+  
+  // Также запускаем один раз при инициализации
+  cleanupOldLargeMessages();
+};

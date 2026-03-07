@@ -75,6 +75,11 @@ export function MessengerPage({
     };
     
     loadPinnedChats();
+
+    // Запускаем еженедельную очистку больших старых сообщений
+    const { scheduleWeeklyCleanup } = require('../lib/imgbb');
+    const { remove } = require('firebase/database');
+    scheduleWeeklyCleanup(database, ref, remove);
   }, [userId]);
 
   useEffect(() => {

@@ -11,6 +11,19 @@ import { uploadImageToImgBB } from "./imgbb";
 
 export const registerUser = async (email: string, password: string, username: string, userId: string) => {
   try {
+    // Проверяем что userId не занят
+    const existingUser = await get(ref(database, 'users'));
+    let userIdExists = false;
+    existingUser.forEach((child) => {
+      if (child.val().userId === userId) {
+        userIdExists = true;
+      }
+    });
+    
+    if (userIdExists) {
+      throw new Error('Этот ID уже занят');
+    }
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
@@ -25,7 +38,18 @@ export const registerUser = async (email: string, password: string, username: st
     
     return user;
   } catch (error: any) {
-    throw new Error(error.message);
+    const errorCode = error.code;
+    let message = error.message;
+    
+    if (errorCode === 'auth/email-already-in-use') {
+      message = 'Этот email уже зарегистрирован';
+    } else if (errorCode === 'auth/weak-password') {
+      message = 'Пароль слишком слабый (минимум 6 символов)';
+    } else if (errorCode === 'auth/invalid-email') {
+      message = 'Неверный формат email';
+    }
+    
+    throw new Error(message);
   }
 };
 
@@ -34,7 +58,20 @@ export const loginUser = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
   } catch (error: any) {
-    throw new Error(error.message);
+    const errorCode = error.code;
+    let message = error.message;
+    
+    if (errorCode === 'auth/user-not-found') {
+      message = 'Пользователь не найден';
+    } else if (errorCode === 'auth/wrong-password') {
+      message = 'Неверный пароль';
+    } else if (errorCode === 'auth/invalid-email') {
+      message = 'Неверный формат email';
+    } else if (errorCode === 'auth/too-many-requests') {
+      message = 'Слишком много попыток входа. Попробуйте позже';
+    }
+    
+    throw new Error(message);
   }
 };
 

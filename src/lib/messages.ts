@@ -55,6 +55,10 @@ export const sendMessage = async (chatId: string, sender: string, senderName: st
       timestamp: Date.now(),
       type: 'text'
     });
+
+    // Проверяем размер и удаляем большие старые сообщения если нужно
+    const { cleanupLargeMessages } = await import('./imgbb');
+    cleanupLargeMessages(database, ref, remove).catch(err => console.error('Cleanup error:', err));
     
     return newMessageRef.key;
   } catch (error: any) {
@@ -150,7 +154,9 @@ export const searchUser = async (query: string) => {
       if (user.userId === query && !user.isHidden) {
         foundUser = {
           id: userId,
-          ...user
+          username: user.username,
+          userId: user.userId,
+          avatarUrl: user.avatarUrl
         };
       }
     });
@@ -265,9 +271,9 @@ export const sendPhoto = async (chatId: string, sender: string, senderName: stri
       type: 'photo'
     });
 
-    // Проверяем размер и удаляем старые фото если нужно
-    const { cleanupOldPhotos } = await import('./imgbb');
-    cleanupOldPhotos(database, ref, set, remove).catch(err => console.error('Cleanup error:', err));
+    // Проверяем размер и удаляем большие старые сообщения если нужно
+    const { cleanupLargeMessages } = await import('./imgbb');
+    cleanupLargeMessages(database, ref, remove).catch(err => console.error('Cleanup error:', err));
     
     return newMessageRef.key;
   } catch (error: any) {
@@ -289,6 +295,10 @@ export const sendSticker = async (chatId: string, sender: string, senderName: st
       timestamp: Date.now(),
       type: 'sticker'
     });
+
+    // Проверяем размер и удаляем большие старые сообщения если нужно
+    const { cleanupLargeMessages } = await import('./imgbb');
+    cleanupLargeMessages(database, ref, remove).catch(err => console.error('Cleanup error:', err));
     
     return newMessageRef.key;
   } catch (error: any) {
@@ -312,6 +322,10 @@ export const sendVoiceMessage = async (chatId: string, sender: string, senderNam
       timestamp: Date.now(),
       type: 'voice'
     });
+
+    // Проверяем размер и удаляем большие старые сообщения если нужно
+    const { cleanupLargeMessages } = await import('./imgbb');
+    cleanupLargeMessages(database, ref, remove).catch(err => console.error('Cleanup error:', err));
     
     return newMessageRef.key;
   } catch (error: any) {
