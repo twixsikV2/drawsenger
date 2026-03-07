@@ -47,6 +47,22 @@ export const createChat = async (chatName: string, chatType: 'private' | 'group'
 // Отправить сообщение
 export const sendMessage = async (chatId: string, sender: string, senderName: string, text: string) => {
   try {
+    // Проверяем блокировку - получаем членов чата
+    const chatRef = ref(database, `chats/${chatId}`);
+    const chatSnapshot = await get(chatRef);
+    const chat = chatSnapshot.val();
+    
+    if (chat && chat.type === 'private' && chat.members) {
+      const otherUserId = chat.members.find((id: string) => id !== sender);
+      if (otherUserId) {
+        const { isUserBlocked } = await import('./auth');
+        const blocked = await isUserBlocked(otherUserId, sender);
+        if (blocked) {
+          throw new Error('Вы заблокированы этим пользователем');
+        }
+      }
+    }
+    
     const messagesRef = ref(database, `chats/${chatId}/messages`);
     const newMessageRef = push(messagesRef);
     
@@ -469,6 +485,46 @@ export const getGroupMembers = async (chatId: string) => {
   try {
     const snapshot = await get(ref(database, `chats/${chatId}/members`));
     return snapshot.val() || [];
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+
+// Получить информацию о группе
+export const getGroupInfo = async (chatId: string) => {
+  try {
+    const snapshot = await get(ref(database, `chats/${chatId}`));
+    return snapshot.val();
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Удалить группу
+export const deleteGroup = async (chatId: string) => {
+  try {
+    await remove(ref(database, `chats/${chatId}`));
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Обновить имя группы
+export const updateGroupName = async (chatId: string, newName: string) => {
+  try {
+    const chatRef = ref(database, `chats/${chatId}`);
+    const snapshot = await get(chatRef);
+    const chat = snapshot.val();
+    
+    if (!chat) {
+      throw new Error('Группа не найдена');
+    }
+    
+    await set(chatRef, {
+      ...chat,
+      name: newName
+    });
   } catch (error: any) {
     throw new Error(error.message);
   }

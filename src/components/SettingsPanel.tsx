@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CloseIcon, UserIcon } from './Icons';
-import { setUserRole, updateUserProfile, uploadAvatar, getUserProfile } from '../lib/auth';
+import { CloseIcon, UserIcon, DeleteIcon } from './Icons';
+import { setUserRole, updateUserProfile, uploadAvatar, getUserProfile, getBlockedUsers, unblockUser } from '../lib/auth';
 import '../styles/SettingsPanel.css';
 
 type Theme = 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal';
@@ -40,19 +40,47 @@ export function SettingsPanel({
   onClose,
   userId,
 }: SettingsPanelProps) {
-  const [activeTab, setActiveTab] = useState<'theme' | 'text' | 'profile'>('theme');
+  const [activeTab, setActiveTab] = useState<'theme' | 'text' | 'profile' | 'blocked'>('theme');
   const [profileUsername, setProfileUsername] = useState('');
   const [profileUserId, setProfileUserId] = useState('');
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [isHidden, setIsHidden] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (userId && activeTab === 'profile') {
       loadProfile();
     }
+    if (userId && activeTab === 'blocked') {
+      loadBlockedUsers();
+    }
   }, [userId, activeTab]);
+
+  const loadBlockedUsers = async () => {
+    if (!userId) return;
+    try {
+      const blocked = await getBlockedUsers(userId);
+      setBlockedUsers(blocked);
+    } catch (error) {
+      console.error('Error loading blocked users:', error);
+    }
+  };
+
+  const handleUnblockUser = async (blockedUserId: string) => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      await unblockUser(userId, blockedUserId);
+      setBlockedUsers(blockedUsers.filter(id => id !== blockedUserId));
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+      alert('Ошибка разблокировки');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadProfile = async () => {
     if (!userId) return;
@@ -124,6 +152,12 @@ export function SettingsPanel({
             onClick={() => setActiveTab('profile')}
           >
             Профиль
+          </button>
+          <button
+            className={`tab ${activeTab === 'blocked' ? 'active' : ''}`}
+            onClick={() => setActiveTab('blocked')}
+          >
+            Заблокированные
           </button>
         </div>
 
@@ -226,6 +260,31 @@ export function SettingsPanel({
                     {loading ? 'Сохраняю...' : 'Сохранить'}
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'blocked' && (
+            <div className="settings-section">
+              <h3>Заблокированные пользователи</h3>
+              <div className="blocked-users-list">
+                {blockedUsers.length === 0 ? (
+                  <div className="no-blocked">Нет заблокированных пользователей</div>
+                ) : (
+                  blockedUsers.map(blockedUserId => (
+                    <div key={blockedUserId} className="blocked-user-item">
+                      <div className="blocked-user-id">{blockedUserId}</div>
+                      <button
+                        className="unblock-btn"
+                        onClick={() => handleUnblockUser(blockedUserId)}
+                        disabled={loading}
+                      >
+                        <DeleteIcon size={16} />
+                        Разблокировать
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

@@ -6,7 +6,7 @@ import {
   User
 } from "firebase/auth";
 import { auth, database } from "./firebase";
-import { ref, set, get } from "firebase/database";
+import { ref, set, get, remove } from "firebase/database";
 import { uploadImageToImgBB } from "./imgbb";
 
 export const registerUser = async (email: string, password: string, username: string, userId: string) => {
@@ -172,5 +172,46 @@ export const uploadAvatar = async (userId: string, file: File) => {
     return avatarUrl;
   } catch (error: any) {
     throw new Error(error.message);
+  }
+};
+
+
+// Заблокировать пользователя
+export const blockUser = async (userId: string, blockedUserId: string) => {
+  try {
+    const currentBlocked = await get(ref(database, `users/${userId}/blockedUsers`)).then(s => s.val() || {});
+    await set(ref(database, `users/${userId}/blockedUsers/${blockedUserId}`), true);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Разблокировать пользователя
+export const unblockUser = async (userId: string, blockedUserId: string) => {
+  try {
+    await remove(ref(database, `users/${userId}/blockedUsers/${blockedUserId}`));
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Получить список заблокированных пользователей
+export const getBlockedUsers = async (userId: string) => {
+  try {
+    const snapshot = await get(ref(database, `users/${userId}/blockedUsers`));
+    if (!snapshot.val()) return [];
+    return Object.keys(snapshot.val());
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Проверить заблокирован ли пользователь
+export const isUserBlocked = async (userId: string, otherUserId: string) => {
+  try {
+    const snapshot = await get(ref(database, `users/${userId}/blockedUsers/${otherUserId}`));
+    return snapshot.val() === true;
+  } catch (error: any) {
+    return false;
   }
 };
