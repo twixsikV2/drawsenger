@@ -310,7 +310,6 @@ export function MessengerPage({
             onCancelReply={() => setReplyingTo(null)}
             onCall={handleCall}
             onRecall={handleCall}
-            onScreenShare={handleScreenShare}
           />
         ) : (
           <div className="no-chat">Выберите чат</div>
