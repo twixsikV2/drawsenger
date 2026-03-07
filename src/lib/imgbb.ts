@@ -1,26 +1,21 @@
-const PIXELDRAIN_API_KEY = 'e50f62db-f232-48e5-a4df-8707d823f6e7';
-
 export const uploadImageToImgBB = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('source', file);
 
-    console.log('Uploading file to Pixeldrain:', file.name, file.size, file.type);
+    console.log('Uploading file to Freeimage.host:', file.name, file.size, file.type);
 
-    const response = await fetch('https://pixeldrain.com/api/file', {
+    const response = await fetch('https://freeimage.host/api/1/upload', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PIXELDRAIN_API_KEY}`
-      },
       body: formData
     });
 
     const responseText = await response.text();
-    console.log('Pixeldrain response status:', response.status);
-    console.log('Pixeldrain response:', responseText);
+    console.log('Freeimage.host response status:', response.status);
+    console.log('Freeimage.host response:', responseText);
 
     if (!response.ok) {
-      console.error('Pixeldrain error:', response.status, responseText);
+      console.error('Freeimage.host error:', response.status, responseText);
       throw new Error(`Upload failed with status ${response.status}`);
     }
 
@@ -29,15 +24,15 @@ export const uploadImageToImgBB = async (file: File): Promise<string> => {
       data = JSON.parse(responseText);
     } catch (e) {
       console.error('Failed to parse response as JSON:', responseText);
-      throw new Error('Invalid response format from Pixeldrain');
+      throw new Error('Invalid response format from Freeimage.host');
     }
     
-    if (!data.id) {
-      console.error('No ID in response:', data);
-      throw new Error('No file ID in response');
+    if (!data.image || !data.image.url) {
+      console.error('No URL in response:', data);
+      throw new Error('No file URL in response');
     }
 
-    const fileUrl = `https://pixeldrain.com/u/${data.id}`;
+    const fileUrl = data.image.url;
     console.log('File uploaded successfully:', fileUrl);
     return fileUrl;
   } catch (error: any) {
