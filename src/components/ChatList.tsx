@@ -36,7 +36,11 @@ export function ChatList({ chats, selectedChatId, onSelectChat }: ChatListProps)
           className={`chat-item ${selectedChatId === chat.id ? 'active' : ''}`}
           onClick={() => onSelectChat(chat.id)}
         >
-          <div className="chat-avatar">{chat.name[0]}</div>
+          {chat.avatarUrl ? (
+            <img src={chat.avatarUrl} alt={chat.name} className="chat-avatar-img" />
+          ) : (
+            <div className="chat-avatar">{chat.name[0]}</div>
+          )}
           <div className="chat-info">
             <div className="chat-name">{chat.name}</div>
             <div className="chat-preview">{getLastMessagePreview(chat.messages)}</div>

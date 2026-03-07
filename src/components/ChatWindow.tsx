@@ -21,6 +21,7 @@ export interface Chat {
   name: string;
   type: 'private' | 'group' | 'channel';
   messages: Message[];
+  avatarUrl?: string;
 }
 
 interface ChatWindowProps {

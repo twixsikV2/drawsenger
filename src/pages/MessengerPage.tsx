@@ -55,9 +55,26 @@ export function MessengerPage({
           const chatsWithMessages = await Promise.all(
             firebaseChats.map(async (chat) => {
               return new Promise<Chat>((resolve) => {
-                const unsubscribe = listenToMessages(chat.id, (messages) => {
+                const unsubscribe = listenToMessages(chat.id, async (messages) => {
+                  let avatarUrl: string | undefined;
+                  
+                  // Для приватных чатов загружаем аватар другого пользователя
+                  if (chat.type === 'private' && chat.members) {
+                    const otherUserId = chat.members.find(id => id !== userId);
+                    if (otherUserId) {
+                      try {
+                        const { getUserProfile } = await import('../lib/auth');
+                        const profile = await getUserProfile(otherUserId);
+                        avatarUrl = profile?.avatarUrl;
+                      } catch (error) {
+                        console.error('Error loading avatar:', error);
+                      }
+                    }
+                  }
+                  
                   resolve({
                     ...chat,
+                    avatarUrl,
                     messages: messages.map(msg => ({
                       ...msg,
                       timestamp: new Date(msg.timestamp)
