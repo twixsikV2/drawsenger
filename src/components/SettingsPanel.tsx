@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CloseIcon } from './Icons';
+import { CloseIcon, UserIcon } from './Icons';
 import { setUserRole, updateUserProfile, uploadAvatar, getUserProfile } from '../lib/auth';
 import '../styles/SettingsPanel.css';
 
@@ -173,7 +173,9 @@ export function SettingsPanel({
                   {profileAvatar ? (
                     <img src={profileAvatar} alt="Avatar" className="profile-avatar" />
                   ) : (
-                    <div className="profile-avatar-placeholder">👤</div>
+                    <div className="profile-avatar-placeholder">
+                      <UserIcon size={48} />
+                    </div>
                   )}
                   <button
                     className="upload-avatar-btn"

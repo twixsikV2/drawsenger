@@ -2,29 +2,8 @@ import React, { useState } from 'react';
 import { MessageInput } from './MessageInput';
 import { VoiceMessage } from './VoiceMessage';
 import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon, ZoomInIcon, ZoomOutIcon, DownloadIcon } from './Icons';
+import { Message, Chat } from '../lib/messages';
 import '../styles/ChatWindow.css';
-
-export interface Message {
-  id: string;
-  sender: string;
-  senderName: string;
-  text?: string;
-  photoUrl?: string;
-  timestamp: Date;
-  type: 'text' | 'sticker' | 'voice' | 'call' | 'photo';
-  stickerId?: string;
-  voiceData?: { duration: number; url: string };
-  callDuration?: number;
-}
-
-export interface Chat {
-  id: string;
-  name: string;
-  type: 'private' | 'group' | 'channel';
-  messages: Message[];
-  avatarUrl?: string;
-  members?: string[];
-}
 
 interface ChatWindowProps {
   chat: Chat;
@@ -397,7 +376,7 @@ export function ChatWindow({
                 </div>
               )}
               <div className="message-time">
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 {pinnedMessageId === message.id && <StarFilledIcon size={12} color="var(--primary)" />}
               </div>
             </div>
@@ -434,7 +413,7 @@ export function ChatWindow({
                         {msg.type === 'sticker' && <div className="pinned-sticker">{msg.stickerId}</div>}
                       </div>
                       <div className="pinned-item-time">
-                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
                   ))

@@ -21,6 +21,8 @@ export interface Chat {
   type: 'private' | 'group' | 'channel';
   createdAt: number;
   members: string[];
+  messages: Message[];
+  avatarUrl?: string;
 }
 
 // Создать новый чат
@@ -191,26 +193,8 @@ export const createPrivateChat = async (userId: string, otherUserId: string, oth
       return existingChat;
     }
     
-    // Создаем новый приватный чат
-    const chatsRef = ref(database, 'chats');
-    const newChatRef = push(chatsRef);
-    
-    const chatData = {
-      name: otherUserName,
-      type: 'private',
-      createdAt: Date.now(),
-      members: [userId, otherUserId]
-    };
-    
-    await set(newChatRef, chatData);
-    
-    return {
-      id: newChatRef.key || '',
-      name: otherUserName,
-      type: 'private',
-      createdAt: Date.now(),
-      members: [userId, otherUserId]
-    };
+    // Не создаем чат здесь - он создастся при первом сообщении через ensurePrivateChatExists
+    return null;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -398,6 +382,93 @@ export const getPinnedChats = async (userId: string): Promise<string[]> => {
     const snapshot = await get(ref(database, `users/${userId}/pinnedChats`));
     if (!snapshot.val()) return [];
     return Object.keys(snapshot.val());
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Создать группу
+export const createGroup = async (groupName: string, creatorId: string, members: string[]) => {
+  try {
+    const chatsRef = ref(database, 'chats');
+    const newChatRef = push(chatsRef);
+    
+    await set(newChatRef, {
+      name: groupName,
+      type: 'group',
+      createdAt: Date.now(),
+      members: [creatorId, ...members],
+      creator: creatorId
+    });
+    
+    return {
+      id: newChatRef.key || '',
+      name: groupName,
+      type: 'group',
+      createdAt: Date.now(),
+      members: [creatorId, ...members]
+    };
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Пригласить пользователя в группу
+export const inviteUserToGroup = async (chatId: string, userId: string) => {
+  try {
+    const chatRef = ref(database, `chats/${chatId}`);
+    const snapshot = await get(chatRef);
+    const chat = snapshot.val();
+    
+    if (!chat) {
+      throw new Error('Чат не найден');
+    }
+    
+    const members = chat.members || [];
+    if (members.includes(userId)) {
+      throw new Error('Пользователь уже в группе');
+    }
+    
+    members.push(userId);
+    await set(chatRef, {
+      ...chat,
+      members
+    });
+    
+    return true;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Удалить пользователя из группы
+export const removeUserFromGroup = async (chatId: string, userId: string) => {
+  try {
+    const chatRef = ref(database, `chats/${chatId}`);
+    const snapshot = await get(chatRef);
+    const chat = snapshot.val();
+    
+    if (!chat) {
+      throw new Error('Чат не найден');
+    }
+    
+    const members = (chat.members || []).filter((id: string) => id !== userId);
+    await set(chatRef, {
+      ...chat,
+      members
+    });
+    
+    return true;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Получить членов группы
+export const getGroupMembers = async (chatId: string) => {
+  try {
+    const snapshot = await get(ref(database, `chats/${chatId}/members`));
+    return snapshot.val() || [];
   } catch (error: any) {
     throw new Error(error.message);
   }

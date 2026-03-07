@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ChatList } from '../components/ChatList';
-import { ChatWindow, Chat, Message } from '../components/ChatWindow';
+import { ChatWindow } from '../components/ChatWindow';
 import { SearchBar } from '../components/SearchBar';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { VideoChat } from '../components/VideoChat';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
-import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists, listenToUserChats, deleteUserChat, deleteChat, togglePinChat, getPinnedChats } from '../lib/messages';
+import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists, listenToUserChats, deleteUserChat, deleteChat, togglePinChat, getPinnedChats, Chat, Message } from '../lib/messages';
 import { getUserUsername } from '../lib/auth';
 import { ref, get, set } from 'firebase/database';
 import { database } from '../lib/firebase';
@@ -33,8 +33,8 @@ export function MessengerPage({
   onFontSizeChange,
 }: MessengerPageProps) {
   const [chats, setChats] = useState<Chat[]>([
-    { id: '1', name: 'Общий чат', type: 'group', messages: [] },
-    { id: '2', name: 'Личный чат', type: 'private', messages: [] },
+    { id: '1', name: 'Общий чат', type: 'group', messages: [], createdAt: Date.now(), members: [] },
+    { id: '2', name: 'Личный чат', type: 'private', messages: [], createdAt: Date.now(), members: [] },
   ]);
   const [selectedChatId, setSelectedChatId] = useState('1');
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,10 +124,7 @@ export function MessengerPage({
                   ...chat,
                   name: chatName,
                   avatarUrl,
-                  messages: messages.map(msg => ({
-                    ...msg,
-                    timestamp: new Date(msg.timestamp)
-                  }))
+                  messages: messages
                 });
               });
             });
@@ -153,10 +150,7 @@ export function MessengerPage({
           chat.id === selectedChatId
             ? {
                 ...chat,
-                messages: messages.map(msg => ({
-                  ...msg,
-                  timestamp: new Date(msg.timestamp)
-                }))
+                messages: messages
               }
             : chat
         )
@@ -277,7 +271,7 @@ export function MessengerPage({
       sender: userId,
       senderName: userUsername,
       text: 'Звонок',
-      timestamp: new Date(),
+      timestamp: Date.now(),
       type: 'call',
       callDuration
     };
@@ -356,7 +350,9 @@ export function MessengerPage({
       id: chatId,
       name: chatName,
       type: 'private',
-      messages: []
+      messages: [],
+      createdAt: Date.now(),
+      members: []
     };
     setChats([...chats, newChat]);
     setSelectedChatId(chatId);
