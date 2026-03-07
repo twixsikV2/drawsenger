@@ -1,21 +1,41 @@
-import { storage } from './firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
 export const uploadImageToImgBB = async (file: File): Promise<string> => {
   try {
-    console.log('Uploading file to Firebase Storage:', file.name, file.size, file.type);
+    const formData = new FormData();
+    formData.append('filename', file);
+    formData.append('access', 'true');
 
-    // Создаем уникальное имя файла
-    const fileName = `${Date.now()}_${file.name}`;
-    const fileRef = ref(storage, `uploads/${fileName}`);
+    console.log('Uploading file to 4file:', file.name, file.size, file.type);
 
-    // Загружаем файл
-    await uploadBytes(fileRef, file);
+    const response = await fetch('https://4-files.ru/api/upload.php', {
+      method: 'POST',
+      body: formData
+    });
 
-    // Получаем URL для скачивания
-    const downloadURL = await getDownloadURL(fileRef);
-    console.log('File uploaded successfully:', downloadURL);
-    return downloadURL;
+    const responseText = await response.text();
+    console.log('4file response status:', response.status);
+    console.log('4file response:', responseText);
+
+    if (!response.ok) {
+      console.error('4file error:', response.status, responseText);
+      throw new Error(`Upload failed with status ${response.status}`);
+    }
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse response as JSON:', responseText);
+      throw new Error('Invalid response format from 4file');
+    }
+    
+    if (!data.url) {
+      console.error('No URL in response:', data);
+      throw new Error('No file URL in response');
+    }
+
+    const fileUrl = `https://4-files.ru${data.url}`;
+    console.log('File uploaded successfully:', fileUrl);
+    return fileUrl;
   } catch (error: any) {
     console.error('Upload error:', error);
     throw new Error(`File upload failed: ${error.message}`);
