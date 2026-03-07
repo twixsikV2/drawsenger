@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Chat, Message } from './ChatWindow';
+import { Chat, Message } from '../lib/messages';
 import { DeleteIcon, StarIcon, StarFilledIcon } from './Icons';
 import '../styles/ChatList.css';
 
