@@ -114,20 +114,6 @@ export function VideoChat({ contactName, onEndCall, isScreenShare }: VideoChatPr
           🎤
         </button>
         <button
-          className={`control-btn ${isVideoOff ? 'active' : ''}`}
-          onClick={toggleVideo}
-          title={isVideoOff ? 'Включить камеру' : 'Отключить камеру'}
-        >
-          <CameraOffIcon size={20} />
-        </button>
-        <button
-          className={`control-btn ${isScreenShare ? 'active' : ''}`}
-          onClick={() => window.location.reload()}
-          title="Демонстрация экрана"
-        >
-          🖥️
-        </button>
-        <button
           className="control-btn end-call"
           onClick={onEndCall}
           title="Завершить звонок"

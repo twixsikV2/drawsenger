@@ -359,7 +359,12 @@ export function MessengerPage({
 
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).sort((a, b) => {
+    // Закрепленные чаты в начале
+    const aPinned = pinnedChats.includes(a.id) ? 0 : 1;
+    const bPinned = pinnedChats.includes(b.id) ? 0 : 1;
+    return aPinned - bPinned;
+  });
 
   if (inCall && selectedChat?.type === 'private') {
     return (

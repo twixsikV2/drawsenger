@@ -343,11 +343,6 @@ export function ChatWindow({
                   <button className="select-btn" onClick={() => setSelectionMode(true)} title="Выделить сообщения">
                     <CheckSquareIcon size={20} />
                   </button>
-                  {chat.type === 'private' && (
-                    <button className="call-btn" onClick={onCall} title="Звонок">
-                      <PhoneIcon size={20} />
-                    </button>
-                  )}
                 </>
               )}
             </div>

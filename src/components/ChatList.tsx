@@ -51,6 +51,17 @@ export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, on
     setContextMenu({ x, y, chatId });
   };
 
+  React.useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.chat-context-menu')) {
+        setContextMenu(null);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
+
   return (
     <div className="chat-list">
       {chats.map(chat => (

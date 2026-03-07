@@ -68,6 +68,10 @@
   object-fit: cover;
   flex-shrink: 0;
   margin-right: 10px;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
 }
 
 
