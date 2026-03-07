@@ -6,8 +6,10 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { VideoChat } from '../components/VideoChat';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
-import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists } from '../lib/messages';
+import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists, listenToUserChats } from '../lib/messages';
 import { getUserUsername } from '../lib/auth';
+import { ref, get, set } from 'firebase/database';
+import { database } from '../lib/firebase';
 import '../styles/MessengerPage.css';
 
 type Theme = 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal';
@@ -63,57 +65,67 @@ export function MessengerPage({
   }, [userId]);
 
   useEffect(() => {
-    const loadChats = async () => {
+    const unsubscribe = listenToUserChats(userId, async (firebaseChats) => {
       try {
-        const firebaseChats = await getUserChats(userId);
-        if (firebaseChats.length > 0) {
-          const chatsWithMessages = await Promise.all(
-            firebaseChats.map(async (chat) => {
-              return new Promise<Chat>((resolve) => {
-                const unsubscribe = listenToMessages(chat.id, async (messages) => {
-                  let avatarUrl: string | undefined;
-                  let chatName = chat.name;
-                  
-                  // Для приватных чатов загружаем аватар и имя другого пользователя
-                  if (chat.type === 'private' && chat.members) {
-                    const otherUserId = chat.members.find(id => id !== userId);
-                    if (otherUserId) {
-                      try {
-                        const { getUserProfile } = await import('../lib/auth');
-                        const profile = await getUserProfile(otherUserId);
-                        avatarUrl = profile?.avatarUrl;
-                        chatName = profile?.username || chat.name;
-                      } catch (error) {
-                        console.error('Error loading avatar:', error);
-                      }
+        const chatsWithMessages = await Promise.all(
+          firebaseChats.map(async (chat) => {
+            return new Promise<Chat>((resolve) => {
+              const unsubscribe = listenToMessages(chat.id, async (messages) => {
+                let avatarUrl: string | undefined;
+                let chatName = chat.name;
+                
+                // Для приватных чатов загружаем аватар и имя другого пользователя
+                if (chat.type === 'private' && chat.members) {
+                  const otherUserId = chat.members.find(id => id !== userId);
+                  if (otherUserId) {
+                    try {
+                      const { getUserProfile } = await import('../lib/auth');
+                      const profile = await getUserProfile(otherUserId);
+                      avatarUrl = profile?.avatarUrl;
+                      chatName = profile?.username || chat.name;
+                    } catch (error) {
+                      console.error('Error loading avatar:', error);
                     }
                   }
-                  
-                  resolve({
-                    ...chat,
-                    name: chatName,
-                    avatarUrl,
-                    messages: messages.map(msg => ({
-                      ...msg,
-                      timestamp: new Date(msg.timestamp)
-                    }))
-                  });
+                }
+                
+                // Загружаем pinnedMessageId
+                try {
+                  const pinnedSnapshot = await get(ref(database, `chats/${chat.id}/pinnedMessageId`));
+                  const pinnedId = pinnedSnapshot.val();
+                  if (pinnedId) {
+                    const newPinned = new Map(pinnedMessages);
+                    newPinned.set(chat.id, pinnedId);
+                    setPinnedMessages(newPinned);
+                  }
+                } catch (error) {
+                  console.error('Error loading pinned message:', error);
+                }
+                
+                resolve({
+                  ...chat,
+                  name: chatName,
+                  avatarUrl,
+                  messages: messages.map(msg => ({
+                    ...msg,
+                    timestamp: new Date(msg.timestamp)
+                  }))
                 });
               });
-            })
-          );
-          setChats(chatsWithMessages);
-          if (chatsWithMessages.length > 0) {
-            setSelectedChatId(chatsWithMessages[0].id);
-          }
+            });
+          })
+        );
+        setChats(chatsWithMessages);
+        if (chatsWithMessages.length > 0 && !selectedChatId) {
+          setSelectedChatId(chatsWithMessages[0].id);
         }
       } catch (error) {
         console.error('Error loading chats:', error);
       }
-    };
+    });
 
-    loadChats();
-  }, [userId]);
+    return () => unsubscribe();
+  }, [userId, selectedChatId]);
 
   useEffect(() => {
     if (!selectedChatId) return;
@@ -267,16 +279,24 @@ export function MessengerPage({
     }
   };
 
-  const handlePinMessage = (messageId: string) => {
-    console.log('Pin message called with:', messageId);
-    const newPinned = new Map(pinnedMessages);
-    if (newPinned.has(selectedChatId)) {
-      newPinned.delete(selectedChatId);
-    } else {
-      newPinned.set(selectedChatId, messageId);
+  const handlePinMessage = async (messageId: string) => {
+    if (!selectedChatId) return;
+    
+    try {
+      const newPinned = new Map(pinnedMessages);
+      
+      if (newPinned.has(selectedChatId)) {
+        newPinned.delete(selectedChatId);
+        await set(ref(database, `chats/${selectedChatId}/pinnedMessageId`), null);
+      } else {
+        newPinned.set(selectedChatId, messageId);
+        await set(ref(database, `chats/${selectedChatId}/pinnedMessageId`), messageId);
+      }
+      
+      setPinnedMessages(newPinned);
+    } catch (error) {
+      console.error('Error pinning message:', error);
     }
-    setPinnedMessages(newPinned);
-    console.log('Pinned messages:', newPinned);
   };
 
   const handleReplyMessage = (messageId: string) => {

@@ -318,3 +318,27 @@ export const sendVoiceMessage = async (chatId: string, sender: string, senderNam
     throw new Error(error.message);
   }
 };
+
+
+// Слушать изменения в списке чатов пользователя
+export const listenToUserChats = (userId: string, callback: (chats: Chat[]) => void) => {
+  const chatsRef = ref(database, 'chats');
+  
+  const unsubscribe = onValue(chatsRef, async (snapshot) => {
+    const chats: Chat[] = [];
+    
+    snapshot.forEach((childSnapshot) => {
+      const chat = childSnapshot.val();
+      if (chat.members && chat.members.includes(userId)) {
+        chats.push({
+          id: childSnapshot.key || '',
+          ...chat
+        });
+      }
+    });
+    
+    callback(chats);
+  });
+  
+  return unsubscribe;
+};
