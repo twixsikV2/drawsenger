@@ -63,6 +63,15 @@ export const getUserProfile = async (userId: string) => {
   }
 };
 
+export const getUserUsername = async (userId: string): Promise<string> => {
+  try {
+    const profile = await getUserProfile(userId);
+    return profile?.username || 'Unknown';
+  } catch (error: any) {
+    return 'Unknown';
+  }
+};
+
 
 export const setUserRole = async (userId: string, role: 'user' | 'developer' | 'admin') => {
   try {

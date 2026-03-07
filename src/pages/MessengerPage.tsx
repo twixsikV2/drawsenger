@@ -7,6 +7,7 @@ import { VideoChat } from '../components/VideoChat';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
 import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage } from '../lib/messages';
+import { getUserUsername } from '../lib/auth';
 import '../styles/MessengerPage.css';
 
 type Theme = 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal';
@@ -43,9 +44,23 @@ export function MessengerPage({
   const [pinnedMessages, setPinnedMessages] = useState<Map<string, string>>(new Map());
   const [replyingTo, setReplyingTo] = useState<{ chatId: string; messageId: string } | null>(null);
   const [isScreenShare, setIsScreenShare] = useState(false);
+  const [userUsername, setUserUsername] = useState('You');
   const sidebarRef = React.useRef<HTMLDivElement>(null);
 
   const selectedChat = chats.find(c => c.id === selectedChatId);
+
+  useEffect(() => {
+    const loadUsername = async () => {
+      try {
+        const username = await getUserUsername(userId);
+        setUserUsername(username);
+      } catch (error) {
+        console.error('Error loading username:', error);
+      }
+    };
+
+    loadUsername();
+  }, [userId]);
 
   useEffect(() => {
     const loadChats = async () => {
@@ -148,7 +163,7 @@ export function MessengerPage({
   const handleSendMessage = async (text: string) => {
     if (!selectedChat) return;
     try {
-      await sendMessage(selectedChatId, userId, 'You', text);
+      await sendMessage(selectedChatId, userId, userUsername, text);
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -157,7 +172,7 @@ export function MessengerPage({
   const handleSendSticker = async (sticker: string) => {
     if (!selectedChat) return;
     try {
-      await sendSticker(selectedChatId, userId, 'You', sticker);
+      await sendSticker(selectedChatId, userId, userUsername, sticker);
     } catch (error) {
       console.error('Error sending sticker:', error);
     }
@@ -166,7 +181,7 @@ export function MessengerPage({
   const handleSendVoice = async (voiceData: { duration: number; audioBlob: Blob }) => {
     if (!selectedChat) return;
     try {
-      await sendVoiceMessage(selectedChatId, userId, 'You', voiceData.duration, voiceData.audioBlob);
+      await sendVoiceMessage(selectedChatId, userId, userUsername, voiceData.duration, voiceData.audioBlob);
     } catch (error) {
       console.error('Error sending voice:', error);
     }
@@ -175,7 +190,7 @@ export function MessengerPage({
   const handleSendPhoto = async (file: File) => {
     if (!selectedChat) return;
     try {
-      await sendPhoto(selectedChatId, userId, 'You', file);
+      await sendPhoto(selectedChatId, userId, userUsername, file);
     } catch (error) {
       console.error('Error sending photo:', error);
     }
