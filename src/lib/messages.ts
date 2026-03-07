@@ -150,7 +150,10 @@ export const searchUser = async (query: string) => {
       if (user.userId === query && !user.isHidden) {
         foundUser = {
           id: userId,
-          ...user
+          username: user.username,
+          userId: user.userId,
+          avatarUrl: user.avatarUrl
+          // Email не передаем
         };
       }
     });
@@ -252,7 +255,8 @@ export const ensurePrivateChatExists = async (userId: string, otherUserId: strin
 // Отправить фото
 export const sendPhoto = async (chatId: string, sender: string, senderName: string, file: File) => {
   try {
-    const photoUrl = await uploadImageToImgBB(file);
+    const { uploadImageToGifs } = await import('./imgbb');
+    const photoUrl = await uploadImageToGifs(file);
     
     const messagesRef = ref(database, `chats/${chatId}/messages`);
     const newMessageRef = push(messagesRef);
@@ -264,10 +268,6 @@ export const sendPhoto = async (chatId: string, sender: string, senderName: stri
       timestamp: Date.now(),
       type: 'photo'
     });
-
-    // Проверяем размер и удаляем старые фото если нужно
-    const { cleanupOldPhotos } = await import('./imgbb');
-    cleanupOldPhotos(database, ref, set, remove).catch(err => console.error('Cleanup error:', err));
     
     return newMessageRef.key;
   } catch (error: any) {

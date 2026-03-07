@@ -11,6 +11,19 @@ import { uploadImageToImgBB } from "./imgbb";
 
 export const registerUser = async (email: string, password: string, username: string, userId: string) => {
   try {
+    // Проверяем что ID не занят
+    const existingUser = await get(ref(database, 'users'));
+    let idExists = false;
+    existingUser.forEach((child) => {
+      if (child.val().userId === userId) {
+        idExists = true;
+      }
+    });
+    
+    if (idExists) {
+      throw new Error('Этот ID уже занят');
+    }
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
@@ -25,7 +38,14 @@ export const registerUser = async (email: string, password: string, username: st
     
     return user;
   } catch (error: any) {
-    throw new Error(error.message);
+    if (error.code === 'auth/email-already-in-use') {
+      throw new Error('Этот email уже зарегистрирован');
+    } else if (error.code === 'auth/weak-password') {
+      throw new Error('Пароль слишком слабый (минимум 6 символов)');
+    } else if (error.code === 'auth/invalid-email') {
+      throw new Error('Неверный формат email');
+    }
+    throw error;
   }
 };
 
@@ -34,7 +54,16 @@ export const loginUser = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
   } catch (error: any) {
-    throw new Error(error.message);
+    if (error.code === 'auth/user-not-found') {
+      throw new Error('Пользователь не найден');
+    } else if (error.code === 'auth/wrong-password') {
+      throw new Error('Неверный пароль');
+    } else if (error.code === 'auth/invalid-email') {
+      throw new Error('Неверный формат email');
+    } else if (error.code === 'auth/too-many-requests') {
+      throw new Error('Слишком много попыток входа. Попробуйте позже');
+    }
+    throw new Error('Ошибка входа');
   }
 };
 
