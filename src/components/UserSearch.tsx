@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { searchUserByEmail, createPrivateChat } from '../lib/messages';
-import { SearchIcon, CloseIcon } from './Icons';
+import { searchUser, createPrivateChat } from '../lib/messages';
+import { SearchIcon } from './Icons';
 import '../styles/UserSearch.css';
 
 interface UserSearchProps {
@@ -30,7 +30,7 @@ export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) 
     setSearchResult(null);
 
     try {
-      const user = await searchUserByEmail(searchQuery.trim()) as SearchResult | null;
+      const user = await searchUser(searchQuery.trim()) as SearchResult | null;
       if (user && user.id !== userId) {
         setSearchResult(user);
       } else if (user && user.id === userId) {
@@ -72,8 +72,8 @@ export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) 
           <div className="search-input-wrapper">
             <SearchIcon size={18} />
             <input
-              type="email"
-              placeholder="Введи email..."
+              type="text"
+              placeholder="Email, username или ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus

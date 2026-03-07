@@ -95,7 +95,13 @@ export const listenToMessages = (chatId: string, callback: (messages: Message[])
       });
     });
     
-    callback(messages.sort((a, b) => a.timestamp - b.timestamp));
+    // Сортируем по timestamp, потом по ID для стабильности
+    callback(messages.sort((a, b) => {
+      if (a.timestamp !== b.timestamp) {
+        return a.timestamp - b.timestamp;
+      }
+      return a.id.localeCompare(b.id);
+    }));
   });
 };
 
@@ -130,17 +136,21 @@ export const getUserChats = async (userId: string): Promise<Chat[]> => {
   }
 };
 
-// Поиск пользователя по email
-export const searchUserByEmail = async (email: string) => {
+// Поиск пользователя по email, username или ID
+export const searchUser = async (query: string) => {
   try {
     const snapshot = await get(ref(database, 'users'));
     let foundUser = null;
     
     snapshot.forEach((childSnapshot) => {
       const user = childSnapshot.val();
-      if (user.email === email) {
+      const userId = childSnapshot.key || '';
+      
+      if (user.email === query || 
+          user.username?.toLowerCase() === query.toLowerCase() || 
+          userId === query) {
         foundUser = {
-          id: childSnapshot.key || '',
+          id: userId,
           ...user
         };
       }
@@ -248,15 +258,21 @@ export const sendSticker = async (chatId: string, sender: string, senderName: st
 };
 
 // Отправить голосовое сообщение
-export const sendVoiceMessage = async (chatId: string, sender: string, senderName: string, duration: number, url: string) => {
+export const sendVoiceMessage = async (chatId: string, sender: string, senderName: string, duration: number, audioBlob: Blob) => {
   try {
+    const fileName = `${Date.now()}_voice.wav`;
+    const voiceRef = storageRef(storage, `chats/${chatId}/voice/${fileName}`);
+    
+    await uploadBytes(voiceRef, audioBlob);
+    const voiceUrl = await getDownloadURL(voiceRef);
+    
     const messagesRef = ref(database, `chats/${chatId}/messages`);
     const newMessageRef = push(messagesRef);
     
     await set(newMessageRef, {
       sender,
       senderName,
-      voiceData: { duration, url },
+      voiceData: { duration, url: voiceUrl },
       timestamp: Date.now(),
       type: 'voice'
     });

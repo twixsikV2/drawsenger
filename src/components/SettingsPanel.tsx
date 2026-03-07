@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { CloseIcon } from './Icons';
+import { setUserRole, updateUserProfile, uploadAvatar, getUserProfile } from '../lib/auth';
 import '../styles/SettingsPanel.css';
 
 type Theme = 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal';
@@ -11,6 +12,7 @@ interface SettingsPanelProps {
   onThemeChange: (theme: Theme) => void;
   onFontSizeChange: (size: FontSize) => void;
   onClose: () => void;
+  userId?: string;
 }
 
 const THEMES: { name: Theme; label: string; colors: string }[] = [
@@ -36,8 +38,72 @@ export function SettingsPanel({
   onThemeChange,
   onFontSizeChange,
   onClose,
+  userId,
 }: SettingsPanelProps) {
-  const [activeTab, setActiveTab] = useState<'theme' | 'text'>('theme');
+  const [activeTab, setActiveTab] = useState<'theme' | 'text' | 'role' | 'profile'>('theme');
+  const [settingRole, setSettingRole] = useState<'user' | 'developer' | 'admin'>('user');
+  const [profileUsername, setProfileUsername] = useState('');
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (userId && activeTab === 'profile') {
+      loadProfile();
+    }
+  }, [userId, activeTab]);
+
+  const loadProfile = async () => {
+    if (!userId) return;
+    try {
+      const profile = await getUserProfile(userId);
+      setProfileUsername(profile?.username || '');
+      setProfileAvatar(profile?.avatarUrl || null);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  };
+
+  const handleSetRole = async (role: 'user' | 'developer' | 'admin') => {
+    if (!userId) return;
+    try {
+      await setUserRole(userId, role);
+      setSettingRole(role);
+    } catch (error) {
+      console.error('Error setting role:', error);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      await updateUserProfile(userId, profileUsername);
+      alert('Профиль обновлен');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Ошибка обновления профиля');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+
+    setLoading(true);
+    try {
+      const avatarUrl = await uploadAvatar(userId, file);
+      setProfileAvatar(avatarUrl);
+      alert('Аватар загружен');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Ошибка загрузки аватара');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="settings-overlay" onClick={onClose}>
@@ -59,6 +125,18 @@ export function SettingsPanel({
             onClick={() => setActiveTab('text')}
           >
             Текст
+          </button>
+          <button
+            className={`tab ${activeTab === 'role' ? 'active' : ''}`}
+            onClick={() => setActiveTab('role')}
+          >
+            Роль
+          </button>
+          <button
+            className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            Профиль
           </button>
         </div>
 
@@ -96,6 +174,79 @@ export function SettingsPanel({
                     {f.label}
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'role' && (
+            <div className="settings-section">
+              <h3>Выбери свою роль</h3>
+              <div className="settings-buttons">
+                <button
+                  className={`settings-option ${settingRole === 'user' ? 'active' : ''}`}
+                  onClick={() => handleSetRole('user')}
+                >
+                  👤 Пользователь
+                </button>
+                <button
+                  className={`settings-option ${settingRole === 'developer' ? 'active' : ''}`}
+                  onClick={() => handleSetRole('developer')}
+                >
+                  👨‍💻 Разработчик
+                </button>
+                <button
+                  className={`settings-option ${settingRole === 'admin' ? 'active' : ''}`}
+                  onClick={() => handleSetRole('admin')}
+                >
+                  👑 Администратор
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="settings-section">
+              <h3>Профиль</h3>
+              <div className="profile-section">
+                <div className="avatar-container">
+                  {profileAvatar ? (
+                    <img src={profileAvatar} alt="Avatar" className="profile-avatar" />
+                  ) : (
+                    <div className="profile-avatar-placeholder">👤</div>
+                  )}
+                  <button
+                    className="upload-avatar-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={loading}
+                  >
+                    Загрузить аватар
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarSelect}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+
+                <div className="profile-form">
+                  <label>Имя пользователя</label>
+                  <input
+                    type="text"
+                    value={profileUsername}
+                    onChange={(e) => setProfileUsername(e.target.value)}
+                    placeholder="Введи имя"
+                    className="profile-input"
+                  />
+                  <button
+                    className="save-profile-btn"
+                    onClick={handleUpdateProfile}
+                    disabled={loading}
+                  >
+                    {loading ? 'Сохраняю...' : 'Сохранить'}
+                  </button>
+                </div>
               </div>
             </div>
           )}

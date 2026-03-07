@@ -28,7 +28,7 @@ interface ChatWindowProps {
   userId: string;
   onSendMessage: (text: string) => void;
   onSendSticker: (sticker: string) => void;
-  onSendVoice: (voiceData: { duration: number; url: string }) => void;
+  onSendVoice: (voiceData: { duration: number; audioBlob: Blob }) => void;
   onSendPhoto?: (file: File) => void;
   onDeleteMessage: (messageId: string, deleteForAll?: boolean) => void;
   onPinMessage?: (messageId: string) => void;
@@ -38,6 +38,7 @@ interface ChatWindowProps {
   onCancelReply?: () => void;
   onCall: () => void;
   onRecall?: () => void;
+  onScreenShare?: () => void;
 }
 
 export function ChatWindow({
@@ -55,6 +56,7 @@ export function ChatWindow({
   onCancelReply,
   onCall,
   onRecall,
+  onScreenShare,
 }: ChatWindowProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -296,9 +298,16 @@ export function ChatWindow({
                     <CheckSquareIcon size={20} />
                   </button>
                   {chat.type === 'private' && (
-                    <button className="call-btn" onClick={onCall} title="Звонок">
-                      <PhoneIcon size={20} />
-                    </button>
+                    <>
+                      <button className="call-btn" onClick={onCall} title="Видео звонок">
+                        <PhoneIcon size={20} />
+                      </button>
+                      {onScreenShare && (
+                        <button className="call-btn" onClick={onScreenShare} title="Демонстрация экрана">
+                          🖥️
+                        </button>
+                      )}
+                    </>
                   )}
                 </>
               )}

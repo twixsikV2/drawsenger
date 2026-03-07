@@ -5,8 +5,9 @@ import {
   onAuthStateChanged,
   User
 } from "firebase/auth";
-import { auth, database } from "./firebase";
+import { auth, database, storage } from "./firebase";
 import { ref, set, get } from "firebase/database";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const registerUser = async (email: string, password: string, username: string) => {
   try {
@@ -17,6 +18,7 @@ export const registerUser = async (email: string, password: string, username: st
     await set(ref(database, `users/${user.uid}`), {
       email,
       username,
+      role: 'user',
       createdAt: new Date().toISOString()
     });
     
@@ -56,6 +58,55 @@ export const getUserProfile = async (userId: string) => {
   try {
     const snapshot = await get(ref(database, `users/${userId}`));
     return snapshot.val();
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+
+export const setUserRole = async (userId: string, role: 'user' | 'developer' | 'admin') => {
+  try {
+    await set(ref(database, `users/${userId}/role`), role);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const getUserRole = async (userId: string) => {
+  try {
+    const snapshot = await get(ref(database, `users/${userId}/role`));
+    return snapshot.val() || 'user';
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+
+export const updateUserProfile = async (userId: string, username: string, avatarUrl?: string) => {
+  try {
+    const updates: any = { username };
+    if (avatarUrl) {
+      updates.avatarUrl = avatarUrl;
+    }
+    await set(ref(database, `users/${userId}`), {
+      ...await get(ref(database, `users/${userId}`)).then(s => s.val()),
+      ...updates
+    });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const uploadAvatar = async (userId: string, file: File) => {
+  try {
+    const fileName = `${userId}_avatar.jpg`;
+    const avatarRef = storageRef(storage, `avatars/${fileName}`);
+    
+    await uploadBytes(avatarRef, file);
+    const avatarUrl = await getDownloadURL(avatarRef);
+    
+    await updateUserProfile(userId, '', avatarUrl);
+    return avatarUrl;
   } catch (error: any) {
     throw new Error(error.message);
   }

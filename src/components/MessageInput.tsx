@@ -6,7 +6,7 @@ import '../styles/MessageInput.css';
 interface MessageInputProps {
   onSendMessage: (text: string) => void;
   onSendSticker: (sticker: string) => void;
-  onSendVoice: (voiceData: { duration: number; url: string }) => void;
+  onSendVoice: (voiceData: { duration: number; audioBlob: Blob }) => void;
   onSendPhoto?: (file: File) => void;
 }
 
@@ -84,10 +84,9 @@ export function MessageInput({ onSendMessage, onSendSticker, onSendVoice, onSend
       mediaRecorder.onstop = () => {
         if (!isCancelledRef.current) {
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-          const url = URL.createObjectURL(audioBlob);
           onSendVoice({
             duration: recordingTime,
-            url
+            audioBlob
           });
         }
         stream.getTracks().forEach(track => track.stop());

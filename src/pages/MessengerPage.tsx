@@ -3,7 +3,7 @@ import { ChatList } from '../components/ChatList';
 import { ChatWindow, Chat, Message } from '../components/ChatWindow';
 import { SearchBar } from '../components/SearchBar';
 import { SettingsPanel } from '../components/SettingsPanel';
-import { VideoCall } from '../components/VideoCall';
+import { VideoChat } from '../components/VideoChat';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
 import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage } from '../lib/messages';
@@ -42,6 +42,7 @@ export function MessengerPage({
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [pinnedMessages, setPinnedMessages] = useState<Map<string, string>>(new Map());
   const [replyingTo, setReplyingTo] = useState<{ chatId: string; messageId: string } | null>(null);
+  const [isScreenShare, setIsScreenShare] = useState(false);
   const sidebarRef = React.useRef<HTMLDivElement>(null);
 
   const selectedChat = chats.find(c => c.id === selectedChatId);
@@ -145,10 +146,10 @@ export function MessengerPage({
     }
   };
 
-  const handleSendVoice = async (voiceData: { duration: number; url: string }) => {
+  const handleSendVoice = async (voiceData: { duration: number; audioBlob: Blob }) => {
     if (!selectedChat) return;
     try {
-      await sendVoiceMessage(selectedChatId, userId, 'You', voiceData.duration, voiceData.url);
+      await sendVoiceMessage(selectedChatId, userId, 'You', voiceData.duration, voiceData.audioBlob);
     } catch (error) {
       console.error('Error sending voice:', error);
     }
@@ -166,6 +167,13 @@ export function MessengerPage({
   const handleCall = () => {
     setInCall(true);
     setCallDuration(0);
+    setIsScreenShare(false);
+  };
+
+  const handleScreenShare = () => {
+    setInCall(true);
+    setCallDuration(0);
+    setIsScreenShare(true);
   };
 
   const handleEndCall = () => {
@@ -228,9 +236,10 @@ export function MessengerPage({
 
   if (inCall && selectedChat?.type === 'private') {
     return (
-      <VideoCall
+      <VideoChat
         contactName={selectedChat.name}
         onEndCall={handleEndCall}
+        isScreenShare={isScreenShare}
       />
     );
   }
@@ -284,6 +293,7 @@ export function MessengerPage({
             onCancelReply={() => setReplyingTo(null)}
             onCall={handleCall}
             onRecall={handleCall}
+            onScreenShare={handleScreenShare}
           />
         ) : (
           <div className="no-chat">Выберите чат</div>
@@ -296,6 +306,7 @@ export function MessengerPage({
           onThemeChange={onThemeChange}
           onFontSizeChange={onFontSizeChange}
           onClose={() => setShowSettings(false)}
+          userId={userId}
         />
       )}
       {showUserSearch && (
