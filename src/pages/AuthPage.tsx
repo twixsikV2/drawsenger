@@ -51,7 +51,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
     <div className="auth-container">
       <div className="auth-box">
         <div className="auth-header">
-          <img src="/icon.png" alt="DrawSenger" className="auth-icon-large" />
+          <img src={`${process.env.PUBLIC_URL}/icon.png`} alt="DrawSenger" className="auth-icon-large" />
         </div>
         <div className="auth-tabs">
           <button

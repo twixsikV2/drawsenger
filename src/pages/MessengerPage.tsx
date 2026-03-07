@@ -314,7 +314,7 @@ export function MessengerPage({
       <div className="sidebar" ref={sidebarRef} style={{ width: `${sidebarWidth}px` }}>
         <div className="sidebar-resizer" onMouseDown={handleMouseDown} />
         <div className="sidebar-header">
-          <img src="/icon.png" alt="DrawSenger" className="sidebar-icon" />
+          <img src={`${process.env.PUBLIC_URL}/icon.png`} alt="DrawSenger" className="sidebar-icon" />
           <h2>DrawSenger</h2>
           <button
             onClick={() => setShowUserSearch(true)}
