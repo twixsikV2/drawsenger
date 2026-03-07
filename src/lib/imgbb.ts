@@ -1,4 +1,6 @@
-export const uploadImageToPixeldrain = async (file: File): Promise<string> => {
+const PIXELDRAIN_API_KEY = 'e50f62db-f232-48e5-a4df-8707d823f6e7';
+
+export const uploadImageToImgBB = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
     formData.append('file', file);
@@ -7,6 +9,9 @@ export const uploadImageToPixeldrain = async (file: File): Promise<string> => {
 
     const response = await fetch('https://pixeldrain.com/api/file', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PIXELDRAIN_API_KEY}`
+      },
       body: formData
     });
 
@@ -15,7 +20,8 @@ export const uploadImageToPixeldrain = async (file: File): Promise<string> => {
     console.log('Pixeldrain response:', responseText);
 
     if (!response.ok) {
-      throw new Error(`Upload failed with status ${response.status}: ${responseText}`);
+      console.error('Pixeldrain error:', response.status, responseText);
+      throw new Error(`Upload failed with status ${response.status}`);
     }
 
     let data;
@@ -26,13 +32,11 @@ export const uploadImageToPixeldrain = async (file: File): Promise<string> => {
       throw new Error('Invalid response format from Pixeldrain');
     }
     
-    // Проверяем разные возможные форматы ответа
     if (!data.id) {
       console.error('No ID in response:', data);
       throw new Error('No file ID in response');
     }
 
-    // Возвращаем URL для просмотра файла
     const fileUrl = `https://pixeldrain.com/u/${data.id}`;
     console.log('File uploaded successfully:', fileUrl);
     return fileUrl;
@@ -41,6 +45,3 @@ export const uploadImageToPixeldrain = async (file: File): Promise<string> => {
     throw new Error(`File upload failed: ${error.message}`);
   }
 };
-
-// Оставляю старую функцию для совместимости
-export const uploadImageToImgBB = uploadImageToPixeldrain;
