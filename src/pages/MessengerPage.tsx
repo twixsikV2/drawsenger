@@ -6,7 +6,7 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { VideoChat } from '../components/VideoChat';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
-import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists, listenToUserChats } from '../lib/messages';
+import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists, listenToUserChats, deleteUserChat, deleteChat, togglePinChat, getPinnedChats } from '../lib/messages';
 import { getUserUsername } from '../lib/auth';
 import { ref, get, set } from 'firebase/database';
 import { database } from '../lib/firebase';
@@ -47,6 +47,7 @@ export function MessengerPage({
   const [replyingTo, setReplyingTo] = useState<{ chatId: string; messageId: string } | null>(null);
   const [isScreenShare, setIsScreenShare] = useState(false);
   const [userUsername, setUserUsername] = useState('You');
+  const [pinnedChats, setPinnedChats] = useState<string[]>([]);
   const sidebarRef = React.useRef<HTMLDivElement>(null);
 
   const selectedChat = chats.find(c => c.id === selectedChatId);
@@ -62,6 +63,18 @@ export function MessengerPage({
     };
 
     loadUsername();
+    
+    // Загружаем закрепленные чаты
+    const loadPinnedChats = async () => {
+      try {
+        const pinned = await getPinnedChats(userId);
+        setPinnedChats(pinned);
+      } catch (error) {
+        console.error('Error loading pinned chats:', error);
+      }
+    };
+    
+    loadPinnedChats();
   }, [userId]);
 
   useEffect(() => {
@@ -304,6 +317,35 @@ export function MessengerPage({
     setReplyingTo({ chatId: selectedChatId, messageId });
   };
 
+  const handleDeleteChat = async (chatId: string, deleteForAll: boolean) => {
+    try {
+      if (deleteForAll) {
+        await deleteChat(chatId);
+      } else {
+        await deleteUserChat(userId, chatId);
+      }
+      setChats(chats.filter(c => c.id !== chatId));
+      if (selectedChatId === chatId) {
+        setSelectedChatId(chats.length > 1 ? chats[0].id : '');
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+    }
+  };
+
+  const handlePinChat = async (chatId: string, isPinned: boolean) => {
+    try {
+      await togglePinChat(userId, chatId, isPinned);
+      if (isPinned) {
+        setPinnedChats([...pinnedChats, chatId]);
+      } else {
+        setPinnedChats(pinnedChats.filter(id => id !== chatId));
+      }
+    } catch (error) {
+      console.error('Error pinning chat:', error);
+    }
+  };
+
   const handleChatCreated = (chatId: string, chatName: string) => {
     const newChat: Chat = {
       id: chatId,
@@ -359,6 +401,9 @@ export function MessengerPage({
           chats={filteredChats}
           selectedChatId={selectedChatId}
           onSelectChat={setSelectedChatId}
+          onDeleteChat={handleDeleteChat}
+          onPinChat={handlePinChat}
+          pinnedChats={pinnedChats}
         />
       </div>
       <div className="main-content">

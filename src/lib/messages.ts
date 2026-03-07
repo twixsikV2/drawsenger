@@ -342,3 +342,49 @@ export const listenToUserChats = (userId: string, callback: (chats: Chat[]) => v
   
   return unsubscribe;
 };
+
+
+// Удалить чат у пользователя
+export const deleteUserChat = async (userId: string, chatId: string) => {
+  try {
+    const userChatsRef = ref(database, `users/${userId}/chats/${chatId}`);
+    await remove(userChatsRef);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Удалить чат полностью (для всех)
+export const deleteChat = async (chatId: string) => {
+  try {
+    const chatRef = ref(database, `chats/${chatId}`);
+    await remove(chatRef);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Закрепить/открепить чат
+export const togglePinChat = async (userId: string, chatId: string, isPinned: boolean) => {
+  try {
+    const pinnedRef = ref(database, `users/${userId}/pinnedChats/${chatId}`);
+    if (isPinned) {
+      await set(pinnedRef, true);
+    } else {
+      await remove(pinnedRef);
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Получить закрепленные чаты
+export const getPinnedChats = async (userId: string): Promise<string[]> => {
+  try {
+    const snapshot = await get(ref(database, `users/${userId}/pinnedChats`));
+    if (!snapshot.val()) return [];
+    return Object.keys(snapshot.val());
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};

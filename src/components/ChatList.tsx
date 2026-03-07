@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Chat, Message } from './ChatWindow';
+import { DeleteIcon, StarIcon, StarFilledIcon } from './Icons';
 import '../styles/ChatList.css';
 
 interface ChatListProps {
   chats: Chat[];
   selectedChatId: string;
   onSelectChat: (chatId: string) => void;
+  onDeleteChat?: (chatId: string, deleteForAll: boolean) => void;
+  onPinChat?: (chatId: string, isPinned: boolean) => void;
+  pinnedChats?: string[];
 }
 
 function getLastMessagePreview(messages: Message[]): string {
@@ -27,14 +31,34 @@ function getLastMessagePreview(messages: Message[]): string {
   return '';
 }
 
-export function ChatList({ chats, selectedChatId, onSelectChat }: ChatListProps) {
+export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, onPinChat, pinnedChats = [] }: ChatListProps) {
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; chatId: string } | null>(null);
+
+  const handleContextMenu = (e: React.MouseEvent, chatId: string) => {
+    e.preventDefault();
+    const menuWidth = 180;
+    const menuHeight = 120;
+    let x = e.clientX;
+    let y = e.clientY;
+
+    if (x + menuWidth > window.innerWidth) {
+      x = Math.max(10, x - menuWidth);
+    }
+    if (y + menuHeight > window.innerHeight) {
+      y = Math.max(10, y - menuHeight);
+    }
+
+    setContextMenu({ x, y, chatId });
+  };
+
   return (
     <div className="chat-list">
       {chats.map(chat => (
         <div
           key={chat.id}
-          className={`chat-item ${selectedChatId === chat.id ? 'active' : ''}`}
+          className={`chat-item ${selectedChatId === chat.id ? 'active' : ''} ${pinnedChats.includes(chat.id) ? 'pinned' : ''}`}
           onClick={() => onSelectChat(chat.id)}
+          onContextMenu={(e) => handleContextMenu(e, chat.id)}
         >
           {chat.avatarUrl ? (
             <img src={chat.avatarUrl} alt={chat.name} className="chat-avatar-img" />
@@ -45,8 +69,61 @@ export function ChatList({ chats, selectedChatId, onSelectChat }: ChatListProps)
             <div className="chat-name">{chat.name}</div>
             <div className="chat-preview">{getLastMessagePreview(chat.messages)}</div>
           </div>
+          {pinnedChats.includes(chat.id) && (
+            <div className="chat-pinned-icon">
+              <StarFilledIcon size={14} color="var(--primary)" />
+            </div>
+          )}
         </div>
       ))}
+      
+      {contextMenu && (
+        <div
+          className="chat-context-menu"
+          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+          onClick={() => setContextMenu(null)}
+        >
+          <button
+            className="chat-menu-item"
+            onClick={() => {
+              onPinChat?.(contextMenu.chatId, !pinnedChats.includes(contextMenu.chatId));
+              setContextMenu(null);
+            }}
+          >
+            {pinnedChats.includes(contextMenu.chatId) ? (
+              <>
+                <StarFilledIcon size={16} color="var(--primary)" />
+                <span>Открепить</span>
+              </>
+            ) : (
+              <>
+                <StarIcon size={16} />
+                <span>Закрепить</span>
+              </>
+            )}
+          </button>
+          <button
+            className="chat-menu-item delete-own"
+            onClick={() => {
+              onDeleteChat?.(contextMenu.chatId, false);
+              setContextMenu(null);
+            }}
+          >
+            <DeleteIcon size={16} />
+            <span>Удалить у меня</span>
+          </button>
+          <button
+            className="chat-menu-item delete-all"
+            onClick={() => {
+              onDeleteChat?.(contextMenu.chatId, true);
+              setContextMenu(null);
+            }}
+          >
+            <DeleteIcon size={16} />
+            <span>Удалить для всех</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
