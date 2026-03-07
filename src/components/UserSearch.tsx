@@ -11,9 +11,9 @@ interface UserSearchProps {
 
 interface SearchResult {
   id: string;
-  email: string;
   username: string;
   userId: string;
+  avatarUrl?: string;
 }
 
 export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) {
@@ -52,8 +52,14 @@ export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) 
     setLoading(true);
     try {
       const chat = await createPrivateChat(userId, searchResult.id, searchResult.username);
-      onChatCreated(chat.id, chat.name);
-      onClose();
+      if (chat) {
+        onChatCreated(chat.id, chat.name);
+        onClose();
+      } else {
+        // Чат будет создан при первом сообщении
+        onChatCreated(searchResult.id, searchResult.username);
+        onClose();
+      }
     } catch (err: any) {
       setError('Ошибка создания чата');
     } finally {
@@ -92,7 +98,6 @@ export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) 
             <div className="result-info">
               <div className="result-username">{searchResult.username}</div>
               <div className="result-id">ID: {searchResult.userId}</div>
-              <div className="result-email">{searchResult.email}</div>
             </div>
             <button
               className="add-contact-btn"
