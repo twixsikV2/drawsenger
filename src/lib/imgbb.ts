@@ -13,38 +13,40 @@ export const uploadImageToImgBB = async (file: File): Promise<string> => {
 
     const responseText = await response.text();
     console.log('4file response status:', response.status);
-    console.log('4file response:', responseText);
+    console.log('4file full response:', responseText);
+    console.log('4file response length:', responseText.length);
 
     if (!response.ok) {
       console.error('4file error:', response.status, responseText);
       throw new Error(`Upload failed with status ${response.status}`);
     }
 
+    // Пытаемся парсить как JSON
     let data;
     try {
-      // Пытаемся парсить как JSON
       data = JSON.parse(responseText);
-    } catch (e) {
-      // Если не JSON, пытаемся извлечь URL из HTML
-      console.log('Response is not JSON, trying to extract URL from HTML');
-      const urlMatch = responseText.match(/https?:\/\/[^\s"<>]+/);
-      if (urlMatch) {
-        const fileUrl = urlMatch[0];
-        console.log('File uploaded successfully:', fileUrl);
+      console.log('Parsed as JSON:', data);
+      
+      if (data.url) {
+        const fileUrl = `https://4-files.ru${data.url}`;
+        console.log('File uploaded successfully (JSON):', fileUrl);
         return fileUrl;
       }
-      console.error('Failed to parse response:', responseText);
-      throw new Error('Invalid response format from 4file');
-    }
-    
-    if (!data.url) {
-      console.error('No URL in response:', data);
-      throw new Error('No file URL in response');
+    } catch (e) {
+      console.log('Not JSON, trying to extract URL from text');
     }
 
-    const fileUrl = `https://4-files.ru${data.url}`;
-    console.log('File uploaded successfully:', fileUrl);
-    return fileUrl;
+    // Если не JSON, пытаемся извлечь URL из текста
+    const urlMatch = responseText.match(/https?:\/\/[^\s"<>]+/);
+    if (urlMatch) {
+      const fileUrl = urlMatch[0];
+      console.log('File uploaded successfully (extracted):', fileUrl);
+      return fileUrl;
+    }
+
+    // Если ничего не сработало, выводим весь ответ
+    console.error('Could not extract URL from response:', responseText);
+    throw new Error('No file URL found in response');
   } catch (error: any) {
     console.error('Upload error:', error);
     throw new Error(`File upload failed: ${error.message}`);
