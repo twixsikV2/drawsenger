@@ -182,9 +182,9 @@ export const PhotoIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
 export const EmojiIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
     <circle cx="12" cy="12" r="10" />
-    <circle cx="9" cy="9" r="1.5" fill={color} />
-    <circle cx="15" cy="9" r="1.5" fill={color} />
-    <path d="M8 14c1 1 2.5 2 4 2s3-1 4-2" />
+    <path d="M8 14s1.5 2 4 2 4-2 4-2" strokeLinecap="round" />
+    <circle cx="9" cy="9" r="1" fill={color} />
+    <circle cx="15" cy="9" r="1" fill={color} />
   </svg>
 );
 
