@@ -22,9 +22,18 @@ export const uploadImageToImgBB = async (file: File): Promise<string> => {
 
     let data;
     try {
+      // Пытаемся парсить как JSON
       data = JSON.parse(responseText);
     } catch (e) {
-      console.error('Failed to parse response as JSON:', responseText);
+      // Если не JSON, пытаемся извлечь URL из HTML
+      console.log('Response is not JSON, trying to extract URL from HTML');
+      const urlMatch = responseText.match(/https?:\/\/[^\s"<>]+/);
+      if (urlMatch) {
+        const fileUrl = urlMatch[0];
+        console.log('File uploaded successfully:', fileUrl);
+        return fileUrl;
+      }
+      console.error('Failed to parse response:', responseText);
       throw new Error('Invalid response format from 4file');
     }
     
