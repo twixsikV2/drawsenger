@@ -1,28 +1,37 @@
-const CLOUD_NAME = 'dw0f44be';
-const UPLOAD_PRESET = 'ml_default';
+const API_KEY = '37c466cc-6525-459f-b7c5-43ab4e007686';
+const API_URL = 'https://api.gifs.ru/api/v1/upload';
 
 export const uploadImageToImgBB = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET);
 
   try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    console.log('Загрузка на gifs.ru:', file.name);
+    
+    const response = await fetch(API_URL, {
       method: 'POST',
+      headers: {
+        'x-api-key': API_KEY
+      },
       body: formData,
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Cloudinary Error Details:', data);
-      throw new Error(data.error?.message || 'Ошибка загрузки');
+      console.error('gifs.ru Error Details:', data);
+      throw new Error(data.message || 'Ошибка загрузки на gifs.ru');
     }
 
-    console.log('Успех! Ссылка на фото:', data.secure_url);
-    return data.secure_url;
+    const finalUrl = data.url || data.data?.url;
+    if (!finalUrl) {
+      throw new Error('Сервер не вернул ссылку на файл');
+    }
+
+    console.log('Успех! Ссылка:', finalUrl);
+    return finalUrl;
   } catch (error: any) {
-    console.error('Ошибка в функции:', error.message);
+    console.error('Ошибка загрузки:', error.message);
     throw error;
   }
 };
