@@ -114,7 +114,11 @@ export const updateUserProfile = async (userId: string, username: string, userId
 export const uploadAvatar = async (userId: string, file: File) => {
   try {
     const avatarUrl = await uploadImageToImgBB(file);
-    await updateUserProfile(userId, '', avatarUrl);
+    const currentProfile = await get(ref(database, `users/${userId}`)).then(s => s.val());
+    await set(ref(database, `users/${userId}`), {
+      ...currentProfile,
+      avatarUrl
+    });
     return avatarUrl;
   } catch (error: any) {
     throw new Error(error.message);

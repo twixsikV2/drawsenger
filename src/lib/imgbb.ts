@@ -32,7 +32,7 @@ export const cleanupOldPhotos = async (database: any, ref: any, set: any, remove
     let totalSize = 0;
     const photoMessages: any[] = [];
 
-    // Собираем все фото с их размерами и временем
+    // Собираем все фото с их размерами и временем (только из сообщений, не аватары)
     for (const chatId in chats) {
       const messages = chats[chatId].messages || {};
       for (const msgId in messages) {
@@ -51,11 +51,11 @@ export const cleanupOldPhotos = async (database: any, ref: any, set: any, remove
       }
     }
 
-    console.log(`Общий размер фото: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
+    console.log(`Общий размер фото в сообщениях: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
 
-    // Если превышено 250MB, удаляем старые фото
-    if (totalSize > 250 * 1024 * 1024) {
-      console.log('Превышен лимит 250MB, удаляю старые фото...');
+    // Если превышено 950MB, удаляем старые фото
+    if (totalSize > 950 * 1024 * 1024) {
+      console.log('Превышен лимит 950MB, удаляю старые фото...');
       
       // Сортируем по времени (старые первыми)
       photoMessages.sort((a, b) => a.timestamp - b.timestamp);
