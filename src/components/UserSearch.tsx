@@ -13,6 +13,7 @@ interface SearchResult {
   id: string;
   email: string;
   username: string;
+  userId: string;
 }
 
 export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) {
@@ -73,7 +74,7 @@ export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) 
             <SearchIcon size={18} />
             <input
               type="text"
-              placeholder="Email, username или ID..."
+              placeholder="Введи ID пользователя..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
@@ -90,6 +91,7 @@ export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) 
           <div className="search-result">
             <div className="result-info">
               <div className="result-username">{searchResult.username}</div>
+              <div className="result-id">ID: {searchResult.userId}</div>
               <div className="result-email">{searchResult.email}</div>
             </div>
             <button

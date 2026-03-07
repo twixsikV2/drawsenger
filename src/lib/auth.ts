@@ -9,7 +9,7 @@ import { auth, database } from "./firebase";
 import { ref, set, get } from "firebase/database";
 import { uploadImageToImgBB } from "./imgbb";
 
-export const registerUser = async (email: string, password: string, username: string) => {
+export const registerUser = async (email: string, password: string, username: string, userId: string) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -18,6 +18,7 @@ export const registerUser = async (email: string, password: string, username: st
     await set(ref(database, `users/${user.uid}`), {
       email,
       username,
+      userId,
       role: 'user',
       createdAt: new Date().toISOString()
     });
@@ -91,14 +92,18 @@ export const getUserRole = async (userId: string) => {
 };
 
 
-export const updateUserProfile = async (userId: string, username: string, avatarUrl?: string) => {
+export const updateUserProfile = async (userId: string, username: string, userIdDisplay?: string, avatarUrl?: string) => {
   try {
+    const currentProfile = await get(ref(database, `users/${userId}`)).then(s => s.val());
     const updates: any = { username };
+    if (userIdDisplay) {
+      updates.userId = userIdDisplay;
+    }
     if (avatarUrl) {
       updates.avatarUrl = avatarUrl;
     }
     await set(ref(database, `users/${userId}`), {
-      ...await get(ref(database, `users/${userId}`)).then(s => s.val()),
+      ...currentProfile,
       ...updates
     });
   } catch (error: any) {

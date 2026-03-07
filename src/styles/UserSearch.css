@@ -130,6 +130,13 @@
   margin-bottom: 4px;
 }
 
+.result-id {
+  font-size: 12px;
+  color: var(--primary);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
 .result-email {
   font-size: 12px;
   color: var(--text-secondary);

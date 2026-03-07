@@ -43,6 +43,7 @@ export function SettingsPanel({
   const [activeTab, setActiveTab] = useState<'theme' | 'text' | 'role' | 'profile'>('theme');
   const [settingRole, setSettingRole] = useState<'user' | 'developer' | 'admin'>('user');
   const [profileUsername, setProfileUsername] = useState('');
+  const [profileUserId, setProfileUserId] = useState('');
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +59,7 @@ export function SettingsPanel({
     try {
       const profile = await getUserProfile(userId);
       setProfileUsername(profile?.username || '');
+      setProfileUserId(profile?.userId || '');
       setProfileAvatar(profile?.avatarUrl || null);
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -78,7 +80,7 @@ export function SettingsPanel({
     if (!userId) return;
     setLoading(true);
     try {
-      await updateUserProfile(userId, profileUsername);
+      await updateUserProfile(userId, profileUsername, profileUserId);
       alert('Профиль обновлен');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -237,6 +239,14 @@ export function SettingsPanel({
                     value={profileUsername}
                     onChange={(e) => setProfileUsername(e.target.value)}
                     placeholder="Введи имя"
+                    className="profile-input"
+                  />
+                  <label>ID (для поиска)</label>
+                  <input
+                    type="text"
+                    value={profileUserId}
+                    onChange={(e) => setProfileUserId(e.target.value)}
+                    placeholder="Введи ID"
                     className="profile-input"
                   />
                   <button

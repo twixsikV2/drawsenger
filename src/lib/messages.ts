@@ -136,7 +136,7 @@ export const getUserChats = async (userId: string): Promise<Chat[]> => {
   }
 };
 
-// Поиск пользователя по email, username или ID
+// Поиск пользователя только по ID
 export const searchUser = async (query: string) => {
   try {
     const snapshot = await get(ref(database, 'users'));
@@ -146,9 +146,8 @@ export const searchUser = async (query: string) => {
       const user = childSnapshot.val();
       const userId = childSnapshot.key || '';
       
-      if (user.email === query || 
-          user.username?.toLowerCase() === query.toLowerCase() || 
-          userId === query) {
+      // Ищем только по userId (ID отображения)
+      if (user.userId === query) {
         foundUser = {
           id: userId,
           ...user
@@ -190,12 +189,14 @@ export const createPrivateChat = async (userId: string, otherUserId: string, oth
     const chatsRef = ref(database, 'chats');
     const newChatRef = push(chatsRef);
     
-    await set(newChatRef, {
+    const chatData = {
       name: otherUserName,
       type: 'private',
       createdAt: Date.now(),
       members: [userId, otherUserId]
-    });
+    };
+    
+    await set(newChatRef, chatData);
     
     return {
       id: newChatRef.key || '',
@@ -204,6 +205,44 @@ export const createPrivateChat = async (userId: string, otherUserId: string, oth
       createdAt: Date.now(),
       members: [userId, otherUserId]
     };
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Убедиться, что оба пользователя имеют чат (вызывается при отправке сообщения)
+export const ensurePrivateChatExists = async (userId: string, otherUserId: string, otherUserName: string, currentUserName: string) => {
+  try {
+    // Проверяем, есть ли уже чат между этими пользователями
+    const snapshot = await get(ref(database, 'chats'));
+    let existingChatId: string | null = null;
+    
+    snapshot.forEach((childSnapshot) => {
+      const chat = childSnapshot.val();
+      if (chat.type === 'private' && 
+          chat.members && 
+          chat.members.includes(userId) && 
+          chat.members.includes(otherUserId)) {
+        existingChatId = childSnapshot.key || '';
+      }
+    });
+    
+    if (existingChatId) {
+      return existingChatId;
+    }
+    
+    // Создаем новый приватный чат если его нет
+    const chatsRef = ref(database, 'chats');
+    const newChatRef = push(chatsRef);
+    
+    await set(newChatRef, {
+      name: otherUserName,
+      type: 'private',
+      createdAt: Date.now(),
+      members: [userId, otherUserId]
+    });
+    
+    return newChatRef.key || '';
   } catch (error: any) {
     throw new Error(error.message);
   }

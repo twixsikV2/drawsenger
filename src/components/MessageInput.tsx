@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { StickerPicker } from './StickerPicker';
-import { MicrophoneIcon, SendIcon } from './Icons';
+import { MicrophoneIcon, SendIcon, PhotoIcon } from './Icons';
 import '../styles/MessageInput.css';
 
 interface MessageInputProps {
@@ -35,7 +35,22 @@ export function MessageInput({ onSendMessage, onSendSticker, onSendVoice, onSend
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && onSendPhoto) {
+    if (!file) return;
+
+    // Проверяем тип файла
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      alert('Только изображения (JPG, PNG, GIF, WebP)');
+      return;
+    }
+
+    // Проверяем размер (макс 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Размер файла не должен превышать 5MB');
+      return;
+    }
+
+    if (onSendPhoto) {
       onSendPhoto(file);
     }
     if (fileInputRef.current) {
@@ -184,7 +199,7 @@ export function MessageInput({ onSendMessage, onSendSticker, onSendVoice, onSend
           onClick={() => fileInputRef.current?.click()}
           title="Фото"
         >
-          📷
+          <PhotoIcon size={20} />
         </button>
         <input
           ref={fileInputRef}

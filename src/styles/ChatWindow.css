@@ -470,6 +470,17 @@
   margin-bottom: 4px;
 }
 
+.message-photo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.message-photo-container svg {
+  flex-shrink: 0;
+}
+
 .message-call {
   font-size: 12px;
   display: flex;
@@ -579,4 +590,14 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+
+.message-sender {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }

@@ -10,6 +10,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,7 +29,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
         const user = await loginUser(email, password);
         onLogin(user.uid);
       } else {
-        if (!email.trim() || !username.trim() || !password.trim()) {
+        if (!email.trim() || !username.trim() || !password.trim() || !userId.trim()) {
           setError('Заполните все поля');
           return;
         }
@@ -36,7 +37,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
           setError('Пароль должен быть минимум 6 символов');
           return;
         }
-        const user = await registerUser(email, password, username);
+        const user = await registerUser(email, password, username, userId);
         onLogin(user.uid);
       }
     } catch (err: any) {
@@ -83,6 +84,16 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               placeholder="Имя пользователя"
               value={username}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
+              className="auth-input"
+              disabled={loading}
+            />
+          )}
+          {!isLogin && (
+            <input
+              type="text"
+              placeholder="ID (для поиска)"
+              value={userId}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserId(e.target.value)}
               className="auth-input"
               disabled={loading}
             />

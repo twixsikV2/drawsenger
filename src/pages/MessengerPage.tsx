@@ -6,7 +6,7 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { VideoChat } from '../components/VideoChat';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
-import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage } from '../lib/messages';
+import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists } from '../lib/messages';
 import { getUserUsername } from '../lib/auth';
 import '../styles/MessengerPage.css';
 
@@ -163,6 +163,13 @@ export function MessengerPage({
   const handleSendMessage = async (text: string) => {
     if (!selectedChat) return;
     try {
+      // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
+      if (selectedChat.type === 'private' && selectedChat.members) {
+        const otherUserId = selectedChat.members.find(id => id !== userId);
+        if (otherUserId) {
+          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+        }
+      }
       await sendMessage(selectedChatId, userId, userUsername, text);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -172,6 +179,13 @@ export function MessengerPage({
   const handleSendSticker = async (sticker: string) => {
     if (!selectedChat) return;
     try {
+      // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
+      if (selectedChat.type === 'private' && selectedChat.members) {
+        const otherUserId = selectedChat.members.find(id => id !== userId);
+        if (otherUserId) {
+          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+        }
+      }
       await sendSticker(selectedChatId, userId, userUsername, sticker);
     } catch (error) {
       console.error('Error sending sticker:', error);
@@ -181,6 +195,13 @@ export function MessengerPage({
   const handleSendVoice = async (voiceData: { duration: number; audioBlob: Blob }) => {
     if (!selectedChat) return;
     try {
+      // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
+      if (selectedChat.type === 'private' && selectedChat.members) {
+        const otherUserId = selectedChat.members.find(id => id !== userId);
+        if (otherUserId) {
+          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+        }
+      }
       await sendVoiceMessage(selectedChatId, userId, userUsername, voiceData.duration, voiceData.audioBlob);
     } catch (error) {
       console.error('Error sending voice:', error);
@@ -190,6 +211,13 @@ export function MessengerPage({
   const handleSendPhoto = async (file: File) => {
     if (!selectedChat) return;
     try {
+      // Для приватных чатов убеждаемся, что чат существует у обоих пользователей
+      if (selectedChat.type === 'private' && selectedChat.members) {
+        const otherUserId = selectedChat.members.find(id => id !== userId);
+        if (otherUserId) {
+          await ensurePrivateChatExists(userId, otherUserId, selectedChat.name, userUsername);
+        }
+      }
       await sendPhoto(selectedChatId, userId, userUsername, file);
     } catch (error) {
       console.error('Error sending photo:', error);
@@ -213,6 +241,7 @@ export function MessengerPage({
     const newMessage: Message = {
       id: Date.now().toString(),
       sender: userId,
+      senderName: userUsername,
       text: 'Звонок',
       timestamp: new Date(),
       type: 'call',

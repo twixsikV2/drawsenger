@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { MessageInput } from './MessageInput';
 import { VoiceMessage } from './VoiceMessage';
-import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon } from './Icons';
+import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon } from './Icons';
 import '../styles/ChatWindow.css';
 
 export interface Message {
   id: string;
   sender: string;
+  senderName: string;
   text?: string;
   photoUrl?: string;
   timestamp: Date;
@@ -22,6 +23,7 @@ export interface Chat {
   type: 'private' | 'group' | 'channel';
   messages: Message[];
   avatarUrl?: string;
+  members?: string[];
 }
 
 interface ChatWindowProps {
@@ -328,10 +330,16 @@ export function ChatWindow({
               </div>
             )}
             <div className="message-content">
+              {message.sender !== userId && (
+                <div className="message-sender">{message.senderName}</div>
+              )}
               {message.type === 'text' && <div className="message-text">{message.text}</div>}
               {message.type === 'sticker' && <div className="message-sticker">{message.stickerId}</div>}
               {message.type === 'photo' && message.photoUrl && (
-                <img src={message.photoUrl} alt="Photo" className="message-photo" />
+                <div className="message-photo-container">
+                  <PhotoIcon size={16} color="var(--primary)" />
+                  <img src={message.photoUrl} alt="Photo" className="message-photo" />
+                </div>
               )}
               {message.type === 'voice' && message.voiceData && (
                 <VoiceMessage duration={message.voiceData.duration} url={message.voiceData.url} />
