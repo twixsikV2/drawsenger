@@ -40,11 +40,11 @@ export function SettingsPanel({
   onClose,
   userId,
 }: SettingsPanelProps) {
-  const [activeTab, setActiveTab] = useState<'theme' | 'text' | 'role' | 'profile'>('theme');
-  const [settingRole, setSettingRole] = useState<'user' | 'developer' | 'admin'>('user');
+  const [activeTab, setActiveTab] = useState<'theme' | 'text' | 'profile'>('theme');
   const [profileUsername, setProfileUsername] = useState('');
   const [profileUserId, setProfileUserId] = useState('');
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  const [isHidden, setIsHidden] = useState(false);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,18 +61,9 @@ export function SettingsPanel({
       setProfileUsername(profile?.username || '');
       setProfileUserId(profile?.userId || '');
       setProfileAvatar(profile?.avatarUrl || null);
+      setIsHidden(profile?.isHidden || false);
     } catch (error) {
       console.error('Error loading profile:', error);
-    }
-  };
-
-  const handleSetRole = async (role: 'user' | 'developer' | 'admin') => {
-    if (!userId) return;
-    try {
-      await setUserRole(userId, role);
-      setSettingRole(role);
-    } catch (error) {
-      console.error('Error setting role:', error);
     }
   };
 
@@ -80,7 +71,7 @@ export function SettingsPanel({
     if (!userId) return;
     setLoading(true);
     try {
-      await updateUserProfile(userId, profileUsername, profileUserId);
+      await updateUserProfile(userId, profileUsername, profileUserId, undefined, isHidden);
       alert('Профиль обновлен');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -129,12 +120,6 @@ export function SettingsPanel({
             Текст
           </button>
           <button
-            className={`tab ${activeTab === 'role' ? 'active' : ''}`}
-            onClick={() => setActiveTab('role')}
-          >
-            Роль
-          </button>
-          <button
             className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
@@ -176,32 +161,6 @@ export function SettingsPanel({
                     {f.label}
                   </button>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'role' && (
-            <div className="settings-section">
-              <h3>Выбери свою роль</h3>
-              <div className="settings-buttons">
-                <button
-                  className={`settings-option ${settingRole === 'user' ? 'active' : ''}`}
-                  onClick={() => handleSetRole('user')}
-                >
-                  👤 Пользователь
-                </button>
-                <button
-                  className={`settings-option ${settingRole === 'developer' ? 'active' : ''}`}
-                  onClick={() => handleSetRole('developer')}
-                >
-                  👨‍💻 Разработчик
-                </button>
-                <button
-                  className={`settings-option ${settingRole === 'admin' ? 'active' : ''}`}
-                  onClick={() => handleSetRole('admin')}
-                >
-                  👑 Администратор
-                </button>
               </div>
             </div>
           )}
@@ -249,6 +208,14 @@ export function SettingsPanel({
                     placeholder="Введи ID"
                     className="profile-input"
                   />
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={isHidden}
+                      onChange={(e) => setIsHidden(e.target.checked)}
+                    />
+                    <span>Скрыть от поиска</span>
+                  </label>
                   <button
                     className="save-profile-btn"
                     onClick={handleUpdateProfile}

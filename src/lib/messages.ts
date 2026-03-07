@@ -146,8 +146,8 @@ export const searchUser = async (query: string) => {
       const user = childSnapshot.val();
       const userId = childSnapshot.key || '';
       
-      // Ищем только по userId (ID отображения)
-      if (user.userId === query) {
+      // Ищем только по userId (ID отображения) и проверяем что пользователь не скрыт
+      if (user.userId === query && !user.isHidden) {
         foundUser = {
           id: userId,
           ...user

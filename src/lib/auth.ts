@@ -92,7 +92,7 @@ export const getUserRole = async (userId: string) => {
 };
 
 
-export const updateUserProfile = async (userId: string, username: string, userIdDisplay?: string, avatarUrl?: string) => {
+export const updateUserProfile = async (userId: string, username: string, userIdDisplay?: string, avatarUrl?: string, isHidden?: boolean) => {
   try {
     const currentProfile = await get(ref(database, `users/${userId}`)).then(s => s.val());
     const updates: any = { username };
@@ -101,6 +101,9 @@ export const updateUserProfile = async (userId: string, username: string, userId
     }
     if (avatarUrl) {
       updates.avatarUrl = avatarUrl;
+    }
+    if (isHidden !== undefined) {
+      updates.isHidden = isHidden;
     }
     await set(ref(database, `users/${userId}`), {
       ...currentProfile,
