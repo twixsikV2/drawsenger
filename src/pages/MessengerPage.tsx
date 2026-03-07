@@ -311,6 +311,32 @@ export function MessengerPage({
     }
   };
 
+  const handleBlockUser = async (blockedUserId: string) => {
+    try {
+      const { blockUser } = await import('../lib/auth');
+      await blockUser(userId, blockedUserId);
+      alert('Пользователь заблокирован');
+    } catch (error) {
+      console.error('Error blocking user:', error);
+      alert('Ошибка блокировки');
+    }
+  };
+
+  const handleCreateGroup = () => {
+    const groupName = prompt('Введи имя группы:');
+    if (!groupName) return;
+    
+    try {
+      const { createGroup } = require('../lib/messages');
+      createGroup(groupName, userId, [userId]).then((group: Chat) => {
+        setChats([...chats, group]);
+      });
+    } catch (error) {
+      console.error('Error creating group:', error);
+      alert('Ошибка создания группы');
+    }
+  };
+
   const handleReplyMessage = (messageId: string) => {
     console.log('Reply message called with:', messageId);
     setReplyingTo({ chatId: selectedChatId, messageId });
@@ -409,6 +435,7 @@ export function MessengerPage({
           onSelectChat={setSelectedChatId}
           onDeleteChat={handleDeleteChat}
           onPinChat={handlePinChat}
+          onCreateGroup={handleCreateGroup}
           pinnedChats={pinnedChats}
         />
       </div>
@@ -424,6 +451,7 @@ export function MessengerPage({
             onDeleteMessage={handleDeleteMessage}
             onPinMessage={handlePinMessage}
             onReplyMessage={handleReplyMessage}
+            onBlockUser={handleBlockUser}
             pinnedMessageId={pinnedMessages.get(selectedChatId)}
             replyingTo={replyingTo?.chatId === selectedChatId ? replyingTo : null}
             onCancelReply={() => setReplyingTo(null)}

@@ -9,6 +9,7 @@ interface ChatListProps {
   onSelectChat: (chatId: string) => void;
   onDeleteChat?: (chatId: string, deleteForAll: boolean) => void;
   onPinChat?: (chatId: string, isPinned: boolean) => void;
+  onCreateGroup?: () => void;
   pinnedChats?: string[];
 }
 
@@ -31,7 +32,7 @@ function getLastMessagePreview(messages: Message[]): string {
   return '';
 }
 
-export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, onPinChat, pinnedChats = [] }: ChatListProps) {
+export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, onPinChat, onCreateGroup, pinnedChats = [] }: ChatListProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; chatId: string } | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent, chatId: string) => {
@@ -64,6 +65,11 @@ export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, on
 
   return (
     <div className="chat-list">
+      {onCreateGroup && (
+        <button className="create-group-btn" onClick={onCreateGroup} title="Создать группу">
+          +
+        </button>
+      )}
       {chats.map(chat => (
         <div
           key={chat.id}

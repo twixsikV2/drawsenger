@@ -188,3 +188,23 @@
     transform: scale(1);
   }
 }
+
+
+.create-group-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(102, 126, 234, 0.1);
+  border: 2px dashed rgba(102, 126, 234, 0.5);
+  color: var(--primary);
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+
+.create-group-btn:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: var(--primary);
+}

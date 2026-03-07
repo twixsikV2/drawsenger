@@ -913,3 +913,12 @@
     right: 12px;
   }
 }
+
+
+.context-menu-item.block-user {
+  color: #ef4444;
+}
+
+.context-menu-item.block-user:hover {
+  background: rgba(239, 68, 68, 0.1);
+}

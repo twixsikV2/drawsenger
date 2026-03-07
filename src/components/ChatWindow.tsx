@@ -15,6 +15,7 @@ interface ChatWindowProps {
   onDeleteMessage: (messageId: string, deleteForAll?: boolean) => void;
   onPinMessage?: (messageId: string) => void;
   onReplyMessage?: (messageId: string) => void;
+  onBlockUser?: (userId: string) => void;
   pinnedMessageId?: string;
   replyingTo?: { messageId: string; text?: string } | null;
   onCancelReply?: () => void;
@@ -32,6 +33,7 @@ export function ChatWindow({
   onDeleteMessage,
   onPinMessage,
   onReplyMessage,
+  onBlockUser,
   pinnedMessageId,
   replyingTo,
   onCancelReply,
@@ -478,6 +480,21 @@ export function ChatWindow({
             <DeleteIcon size={16} />
             <span>Удалить у всех</span>
           </button>
+          {onBlockUser && chat.type === 'private' && (
+            <button 
+              className="context-menu-item block-user"
+              onClick={() => {
+                const otherUserId = chat.members?.find(id => id !== userId);
+                if (otherUserId) {
+                  onBlockUser(otherUserId);
+                  setContextMenu(null);
+                }
+              }}
+            >
+              <DeleteIcon size={16} />
+              <span>Заблокировать</span>
+            </button>
+          )}
         </div>
       )}
       {photoModal && (
