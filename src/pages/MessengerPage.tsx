@@ -72,8 +72,9 @@ export function MessengerPage({
               return new Promise<Chat>((resolve) => {
                 const unsubscribe = listenToMessages(chat.id, async (messages) => {
                   let avatarUrl: string | undefined;
+                  let chatName = chat.name;
                   
-                  // Для приватных чатов загружаем аватар другого пользователя
+                  // Для приватных чатов загружаем аватар и имя другого пользователя
                   if (chat.type === 'private' && chat.members) {
                     const otherUserId = chat.members.find(id => id !== userId);
                     if (otherUserId) {
@@ -81,6 +82,7 @@ export function MessengerPage({
                         const { getUserProfile } = await import('../lib/auth');
                         const profile = await getUserProfile(otherUserId);
                         avatarUrl = profile?.avatarUrl;
+                        chatName = profile?.username || chat.name;
                       } catch (error) {
                         console.error('Error loading avatar:', error);
                       }
@@ -89,6 +91,7 @@ export function MessengerPage({
                   
                   resolve({
                     ...chat,
+                    name: chatName,
                     avatarUrl,
                     messages: messages.map(msg => ({
                       ...msg,
