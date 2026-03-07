@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/drawsenger/static/css/main.5d7d539f.css",
-    "main.js": "/drawsenger/static/js/main.919ba7c4.js",
+    "main.css": "/drawsenger/static/css/main.697923db.css",
+    "main.js": "/drawsenger/static/js/main.6f3f327c.js",
     "index.html": "/drawsenger/index.html",
-    "main.5d7d539f.css.map": "/drawsenger/static/css/main.5d7d539f.css.map",
-    "main.919ba7c4.js.map": "/drawsenger/static/js/main.919ba7c4.js.map"
+    "main.697923db.css.map": "/drawsenger/static/css/main.697923db.css.map",
+    "main.6f3f327c.js.map": "/drawsenger/static/js/main.6f3f327c.js.map"
   },
   "entrypoints": [
-    "static/css/main.5d7d539f.css",
-    "static/js/main.919ba7c4.js"
+    "static/css/main.697923db.css",
+    "static/js/main.6f3f327c.js"
   ]
 }
