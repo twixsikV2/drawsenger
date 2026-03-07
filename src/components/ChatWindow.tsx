@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MessageInput } from './MessageInput';
 import { VoiceMessage } from './VoiceMessage';
-import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon } from './Icons';
+import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon, ZoomInIcon, ZoomOutIcon, DownloadIcon } from './Icons';
 import '../styles/ChatWindow.css';
 
 export interface Message {
@@ -69,7 +69,7 @@ export function ChatWindow({
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [showPinned, setShowPinned] = useState(false);
-  const [photoModal, setPhotoModal] = useState<{ url: string; scale: number } | null>(null);
+  const [photoModal, setPhotoModal] = useState<{ url: string; scale: number; offsetX?: number; offsetY?: number } | null>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   const isUserScrolling = React.useRef(false);
@@ -117,19 +117,49 @@ export function ChatWindow({
   const handleContextMenu = (e: React.MouseEvent, messageId: string) => {
     e.preventDefault();
     const menuWidth = 200;
-    const menuHeight = 150;
+    const menuHeight = 180;
     let x = e.clientX;
     let y = e.clientY;
 
-    // Проверяем границы экрана
+    // Проверяем границы экрана по X
     if (x + menuWidth > window.innerWidth) {
-      x = window.innerWidth - menuWidth - 10;
+      x = Math.max(10, x - menuWidth);
     }
+    // Проверяем границы экрана по Y
     if (y + menuHeight > window.innerHeight) {
-      y = window.innerHeight - menuHeight - 10;
+      y = Math.max(10, y - menuHeight);
     }
 
     setContextMenu({ x, y, messageId });
+  };
+
+  const handlePhotoMouseDown = (e: React.MouseEvent) => {
+    if (!photoModal || photoModal.scale <= 1) return;
+    e.preventDefault();
+    
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startOffsetX = photoModal.offsetX || 0;
+    const startOffsetY = photoModal.offsetY || 0;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const deltaY = moveEvent.clientY - startY;
+      
+      setPhotoModal(prev => prev ? {
+        ...prev,
+        offsetX: startOffsetX + deltaX,
+        offsetY: startOffsetY + deltaY
+      } : null);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const handleDeleteClick = (messageId: string, deleteForAll: boolean) => {
@@ -483,10 +513,10 @@ export function ChatWindow({
             <div className="photo-modal-controls">
               <button 
                 className="photo-control-btn"
-                onClick={() => setPhotoModal({ ...photoModal, scale: Math.max(1, photoModal.scale - 0.2) })}
+                onClick={() => setPhotoModal({ ...photoModal, scale: Math.max(1, photoModal.scale - 0.2), offsetX: 0, offsetY: 0 })}
                 title="Уменьшить"
               >
-                −
+                <ZoomOutIcon size={18} />
               </button>
               <span className="photo-scale">{Math.round(photoModal.scale * 100)}%</span>
               <button 
@@ -494,7 +524,7 @@ export function ChatWindow({
                 onClick={() => setPhotoModal({ ...photoModal, scale: Math.min(3, photoModal.scale + 0.2) })}
                 title="Увеличить"
               >
-                +
+                <ZoomInIcon size={18} />
               </button>
               <a 
                 href={photoModal.url}
@@ -502,7 +532,7 @@ export function ChatWindow({
                 className="photo-download-btn"
                 title="Скачать"
               >
-                ⬇
+                <DownloadIcon size={18} />
               </a>
             </div>
             <div className="photo-modal-image-container">
@@ -510,7 +540,11 @@ export function ChatWindow({
                 src={photoModal.url} 
                 alt="Full size" 
                 className="photo-modal-image"
-                style={{ transform: `scale(${photoModal.scale})` }}
+                onMouseDown={handlePhotoMouseDown}
+                style={{ 
+                  transform: `scale(${photoModal.scale}) translate(${photoModal.offsetX || 0}px, ${photoModal.offsetY || 0}px)`,
+                  cursor: photoModal.scale > 1 ? 'grab' : 'default'
+                }}
               />
             </div>
           </div>

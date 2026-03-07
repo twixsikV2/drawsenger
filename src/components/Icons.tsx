@@ -177,3 +177,48 @@ export const PhotoIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
     <polyline points="21 15 16 10 5 21" />
   </svg>
 );
+
+
+export const EmojiIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="9" cy="9" r="1.5" fill={color} />
+    <circle cx="15" cy="9" r="1.5" fill={color} />
+    <path d="M8 14c1 1 2.5 2 4 2s3-1 4-2" />
+  </svg>
+);
+
+export const SmilingStickerIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <circle cx="12" cy="12" r="10" fill="rgba(102, 126, 234, 0.1)" stroke={color} />
+    <circle cx="9" cy="10" r="1.5" fill={color} />
+    <circle cx="15" cy="10" r="1.5" fill={color} />
+    <path d="M8 15c1.5 1.5 3 2 4 2s2.5-0.5 4-2" strokeLinecap="round" />
+  </svg>
+);
+
+
+export const ZoomInIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.35-4.35" />
+    <line x1="11" y1="8" x2="11" y2="14" />
+    <line x1="8" y1="11" x2="14" y2="11" />
+  </svg>
+);
+
+export const ZoomOutIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.35-4.35" />
+    <line x1="8" y1="11" x2="14" y2="11" />
+  </svg>
+);
+
+export const DownloadIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);

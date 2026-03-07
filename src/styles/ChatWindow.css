@@ -720,6 +720,12 @@
   justify-content: center;
   overflow: auto;
   background: rgba(0, 0, 0, 0.5);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.photo-modal-image-container::-webkit-scrollbar {
+  display: none;
 }
 
 .photo-modal-image {
@@ -727,7 +733,10 @@
   max-height: 100%;
   object-fit: contain;
   transition: transform 0.2s ease-out;
-  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  will-change: transform;
 }
 
 .photo-modal-image:active {

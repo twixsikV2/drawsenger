@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { StickerPicker } from './StickerPicker';
-import { MicrophoneIcon, SendIcon, PhotoIcon } from './Icons';
+import { MicrophoneIcon, SendIcon, PhotoIcon, EmojiIcon } from './Icons';
 import '../styles/MessageInput.css';
 
 interface MessageInputProps {
@@ -191,7 +191,7 @@ export function MessageInput({ onSendMessage, onSendSticker, onSendVoice, onSend
           onClick={() => setShowStickers(!showStickers)}
           title="Стикеры"
         >
-          😊
+          <EmojiIcon size={20} />
         </button>
         <button
           type="button"
