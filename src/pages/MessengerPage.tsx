@@ -222,8 +222,9 @@ export function MessengerPage({
         }
       }
       await sendPhoto(selectedChatId, userId, userUsername, file);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending photo:', error);
+      alert(`Ошибка загрузки фото: ${error.message}`);
     }
   };
 
