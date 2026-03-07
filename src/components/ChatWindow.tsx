@@ -4,18 +4,19 @@ import { VoiceMessage } from './VoiceMessage';
 import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon } from './Icons';
 import '../styles/ChatWindow.css';
 
-interface Message {
+export interface Message {
   id: string;
   sender: string;
   text?: string;
+  photoUrl?: string;
   timestamp: Date;
-  type: 'text' | 'sticker' | 'voice' | 'call';
+  type: 'text' | 'sticker' | 'voice' | 'call' | 'photo';
   stickerId?: string;
   voiceData?: { duration: number; url: string };
   callDuration?: number;
 }
 
-interface Chat {
+export interface Chat {
   id: string;
   name: string;
   type: 'private' | 'group' | 'channel';
@@ -28,6 +29,7 @@ interface ChatWindowProps {
   onSendMessage: (text: string) => void;
   onSendSticker: (sticker: string) => void;
   onSendVoice: (voiceData: { duration: number; url: string }) => void;
+  onSendPhoto?: (file: File) => void;
   onDeleteMessage: (messageId: string, deleteForAll: boolean) => void;
   onPinMessage?: (messageId: string) => void;
   onReplyMessage?: (messageId: string) => void;
@@ -44,6 +46,7 @@ export function ChatWindow({
   onSendMessage,
   onSendSticker,
   onSendVoice,
+  onSendPhoto,
   onDeleteMessage,
   onPinMessage,
   onReplyMessage,
@@ -326,6 +329,9 @@ export function ChatWindow({
             <div className="message-content">
               {message.type === 'text' && <div className="message-text">{message.text}</div>}
               {message.type === 'sticker' && <div className="message-sticker">{message.stickerId}</div>}
+              {message.type === 'photo' && message.photoUrl && (
+                <img src={message.photoUrl} alt="Photo" className="message-photo" />
+              )}
               {message.type === 'voice' && message.voiceData && (
                 <VoiceMessage duration={message.voiceData.duration} url={message.voiceData.url} />
               )}
@@ -359,6 +365,7 @@ export function ChatWindow({
         onSendMessage={onSendMessage}
         onSendSticker={onSendSticker}
         onSendVoice={onSendVoice}
+        onSendPhoto={onSendPhoto}
       />
       {showPinned && (
         <div className="pinned-modal-overlay" onClick={() => setShowPinned(false)}>
@@ -392,7 +399,7 @@ export function ChatWindow({
       {contextMenu && (
         <div
           className="context-menu"
-          style={{ top: `${contextMenu.y - 10}px`, right: `calc(100vw - ${contextMenu.x}px)` }}
+          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
         >
           <div className="context-menu-header">
             <span>Действия с сообщением</span>

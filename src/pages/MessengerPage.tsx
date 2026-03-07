@@ -1,29 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ChatList } from '../components/ChatList';
-import { ChatWindow } from '../components/ChatWindow';
+import { ChatWindow, Chat, Message } from '../components/ChatWindow';
 import { SearchBar } from '../components/SearchBar';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { VideoCall } from '../components/VideoCall';
-import { SettingsIcon, LogoutIcon } from '../components/Icons';
+import { UserSearch } from '../components/UserSearch';
+import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
+import { sendPhoto } from '../lib/messages';
 import '../styles/MessengerPage.css';
-
-interface Message {
-  id: string;
-  sender: string;
-  text?: string;
-  timestamp: Date;
-  type: 'text' | 'sticker' | 'voice' | 'call';
-  stickerId?: string;
-  voiceData?: { duration: number; url: string };
-  callDuration?: number;
-}
-
-interface Chat {
-  id: string;
-  name: string;
-  type: 'private' | 'group' | 'channel';
-  messages: Message[];
-}
 
 type Theme = 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal';
 type FontSize = 'small' | 'medium' | 'large';
@@ -52,6 +36,7 @@ export function MessengerPage({
   const [selectedChatId, setSelectedChatId] = useState('1');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [showUserSearch, setShowUserSearch] = useState(false);
   const [inCall, setInCall] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -138,6 +123,15 @@ export function MessengerPage({
     ));
   };
 
+  const handleSendPhoto = async (file: File) => {
+    if (!selectedChat) return;
+    try {
+      await sendPhoto(selectedChatId, userId, 'You', file);
+    } catch (error) {
+      console.error('Error sending photo:', error);
+    }
+  };
+
   const handleCall = () => {
     setInCall(true);
     setCallDuration(0);
@@ -161,7 +155,7 @@ export function MessengerPage({
     setInCall(false);
   };
 
-  const handleDeleteMessage = (messageId: string, deleteForAll: boolean) => {
+  const handleDeleteMessage = (messageId: string) => {
     setChats(chats.map(chat =>
       chat.id === selectedChatId
         ? {
@@ -189,6 +183,17 @@ export function MessengerPage({
     setReplyingTo({ chatId: selectedChatId, messageId });
   };
 
+  const handleChatCreated = (chatId: string, chatName: string) => {
+    const newChat: Chat = {
+      id: chatId,
+      name: chatName,
+      type: 'private',
+      messages: []
+    };
+    setChats([...chats, newChat]);
+    setSelectedChatId(chatId);
+  };
+
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -209,6 +214,13 @@ export function MessengerPage({
         <div className="sidebar-header">
           <img src="/icon.png" alt="DrawSenger" className="sidebar-icon" />
           <h2>DrawSenger</h2>
+          <button
+            onClick={() => setShowUserSearch(true)}
+            className="settings-btn"
+            title="Найти пользователя"
+          >
+            <UserIcon size={20} />
+          </button>
           <button
             onClick={() => setShowSettings(true)}
             className="settings-btn"
@@ -235,6 +247,7 @@ export function MessengerPage({
             onSendMessage={handleSendMessage}
             onSendSticker={handleSendSticker}
             onSendVoice={handleSendVoice}
+            onSendPhoto={handleSendPhoto}
             onDeleteMessage={handleDeleteMessage}
             onPinMessage={handlePinMessage}
             onReplyMessage={handleReplyMessage}
@@ -255,6 +268,13 @@ export function MessengerPage({
           onThemeChange={onThemeChange}
           onFontSizeChange={onFontSizeChange}
           onClose={() => setShowSettings(false)}
+        />
+      )}
+      {showUserSearch && (
+        <UserSearch
+          userId={userId}
+          onChatCreated={handleChatCreated}
+          onClose={() => setShowUserSearch(false)}
         />
       )}
     </div>

@@ -1,22 +1,6 @@
 import React from 'react';
+import { Chat, Message } from './ChatWindow';
 import '../styles/ChatList.css';
-
-interface Message {
-  id: string;
-  sender: string;
-  text?: string;
-  type: 'text' | 'sticker' | 'voice' | 'call';
-  stickerId?: string;
-  voiceData?: { duration: number; url: string };
-  callDuration?: number;
-}
-
-interface Chat {
-  id: string;
-  name: string;
-  type: 'private' | 'group' | 'channel';
-  messages: Message[];
-}
 
 interface ChatListProps {
   chats: Chat[];
@@ -37,6 +21,7 @@ function getLastMessagePreview(messages: Message[]): string {
   
   if (last.type === 'text') return last.text || '';
   if (last.type === 'sticker') return `${last.stickerId}`;
+  if (last.type === 'photo') return '📷 Фото';
   if (last.type === 'voice') return `🎤 Голос (${last.voiceData?.duration || 0}s)`;
   if (last.type === 'call') return `☎️ Звонок (${formatDuration(last.callDuration || 0)})`;
   return '';

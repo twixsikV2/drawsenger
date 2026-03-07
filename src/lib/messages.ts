@@ -1,13 +1,15 @@
-import { database } from "./firebase";
-import { ref, push, set, get, query, orderByChild, onValue, remove } from "firebase/database";
+import { database, storage } from "./firebase";
+import { ref, push, set, get, onValue, remove } from "firebase/database";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export interface Message {
   id: string;
   sender: string;
   senderName: string;
   text?: string;
+  photoUrl?: string;
   timestamp: number;
-  type: 'text' | 'sticker' | 'voice' | 'call';
+  type: 'text' | 'sticker' | 'voice' | 'call' | 'photo';
   stickerId?: string;
   voiceData?: { duration: number; url: string };
   callDuration?: number;
@@ -123,6 +125,102 @@ export const getUserChats = async (userId: string): Promise<Chat[]> => {
     });
     
     return chats;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Поиск пользователя по email
+export const searchUserByEmail = async (email: string) => {
+  try {
+    const snapshot = await get(ref(database, 'users'));
+    let foundUser = null;
+    
+    snapshot.forEach((childSnapshot) => {
+      const user = childSnapshot.val();
+      if (user.email === email) {
+        foundUser = {
+          id: childSnapshot.key || '',
+          ...user
+        };
+      }
+    });
+    
+    return foundUser;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Создать приватный чат с пользователем
+export const createPrivateChat = async (userId: string, otherUserId: string, otherUserName: string) => {
+  try {
+    // Проверяем, есть ли уже чат между этими пользователями
+    const snapshot = await get(ref(database, 'chats'));
+    let existingChat = null;
+    
+    snapshot.forEach((childSnapshot) => {
+      const chat = childSnapshot.val();
+      if (chat.type === 'private' && 
+          chat.members && 
+          chat.members.includes(userId) && 
+          chat.members.includes(otherUserId)) {
+        existingChat = {
+          id: childSnapshot.key || '',
+          ...chat
+        };
+      }
+    });
+    
+    if (existingChat) {
+      return existingChat;
+    }
+    
+    // Создаем новый приватный чат
+    const chatsRef = ref(database, 'chats');
+    const newChatRef = push(chatsRef);
+    
+    await set(newChatRef, {
+      name: otherUserName,
+      type: 'private',
+      createdAt: Date.now(),
+      members: [userId, otherUserId]
+    });
+    
+    return {
+      id: newChatRef.key || '',
+      name: otherUserName,
+      type: 'private',
+      createdAt: Date.now(),
+      members: [userId, otherUserId]
+    };
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+
+// Отправить фото
+export const sendPhoto = async (chatId: string, sender: string, senderName: string, file: File) => {
+  try {
+    const fileName = `${Date.now()}_${file.name}`;
+    const photoRef = storageRef(storage, `chats/${chatId}/photos/${fileName}`);
+    
+    await uploadBytes(photoRef, file);
+    const photoUrl = await getDownloadURL(photoRef);
+    
+    const messagesRef = ref(database, `chats/${chatId}/messages`);
+    const newMessageRef = push(messagesRef);
+    
+    await set(newMessageRef, {
+      sender,
+      senderName,
+      photoUrl,
+      timestamp: Date.now(),
+      type: 'photo'
+    });
+    
+    return newMessageRef.key;
   } catch (error: any) {
     throw new Error(error.message);
   }

@@ -7,9 +7,10 @@ interface MessageInputProps {
   onSendMessage: (text: string) => void;
   onSendSticker: (sticker: string) => void;
   onSendVoice: (voiceData: { duration: number; url: string }) => void;
+  onSendPhoto?: (file: File) => void;
 }
 
-export function MessageInput({ onSendMessage, onSendSticker, onSendVoice }: MessageInputProps) {
+export function MessageInput({ onSendMessage, onSendSticker, onSendVoice, onSendPhoto }: MessageInputProps) {
   const [message, setMessage] = useState('');
   const [showStickers, setShowStickers] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -22,12 +23,23 @@ export function MessageInput({ onSendMessage, onSendSticker, onSendVoice }: Mess
   const audioContextRef = useRef<AudioContext | null>(null);
   const animationRef = useRef<number | null>(null);
   const isCancelledRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (message.trim()) {
       onSendMessage(message);
       setMessage('');
+    }
+  };
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onSendPhoto) {
+      onSendPhoto(file);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -167,6 +179,21 @@ export function MessageInput({ onSendMessage, onSendSticker, onSendVoice }: Mess
         >
           😊
         </button>
+        <button
+          type="button"
+          className="action-btn"
+          onClick={() => fileInputRef.current?.click()}
+          title="Фото"
+        >
+          📷
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoSelect}
+          style={{ display: 'none' }}
+        />
         <input
           type="text"
           value={message}
