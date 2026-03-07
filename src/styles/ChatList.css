@@ -192,13 +192,13 @@
 
 .create-group-btn {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   background: rgba(102, 126, 234, 0.1);
-  border: 2px dashed rgba(102, 126, 234, 0.5);
+  border: 1px solid rgba(102, 126, 234, 0.3);
   color: var(--primary);
-  font-size: 24px;
+  font-size: 14px;
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 8px;

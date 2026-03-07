@@ -52,14 +52,8 @@ export function UserSearch({ userId, onChatCreated, onClose }: UserSearchProps) 
     setLoading(true);
     try {
       const chat = await createPrivateChat(userId, searchResult.id, searchResult.username);
-      if (chat) {
-        onChatCreated(chat.id, chat.name);
-        onClose();
-      } else {
-        // Чат будет создан при первом сообщении
-        onChatCreated(searchResult.id, searchResult.username);
-        onClose();
-      }
+      onChatCreated(chat.id, chat.name);
+      onClose();
     } catch (err: any) {
       setError('Ошибка создания чата');
     } finally {

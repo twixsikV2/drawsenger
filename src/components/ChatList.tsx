@@ -9,7 +9,7 @@ interface ChatListProps {
   onSelectChat: (chatId: string) => void;
   onDeleteChat?: (chatId: string, deleteForAll: boolean) => void;
   onPinChat?: (chatId: string, isPinned: boolean) => void;
-  onCreateGroup?: () => void;
+  onManageGroup?: (chatId: string) => void;
   pinnedChats?: string[];
 }
 
@@ -32,7 +32,7 @@ function getLastMessagePreview(messages: Message[]): string {
   return '';
 }
 
-export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, onPinChat, onCreateGroup, pinnedChats = [] }: ChatListProps) {
+export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, onPinChat, onManageGroup, pinnedChats = [] }: ChatListProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; chatId: string } | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent, chatId: string) => {
@@ -65,11 +65,6 @@ export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, on
 
   return (
     <div className="chat-list">
-      {onCreateGroup && (
-        <button className="create-group-btn" onClick={onCreateGroup} title="Создать группу">
-          +
-        </button>
-      )}
       {chats.map(chat => (
         <div
           key={chat.id}
@@ -139,6 +134,17 @@ export function ChatList({ chats, selectedChatId, onSelectChat, onDeleteChat, on
             <DeleteIcon size={16} />
             <span>Удалить для всех</span>
           </button>
+          {onManageGroup && chats.find(c => c.id === contextMenu.chatId)?.type === 'group' && (
+            <button
+              className="chat-menu-item"
+              onClick={() => {
+                onManageGroup(contextMenu.chatId);
+                setContextMenu(null);
+              }}
+            >
+              <span>Управление группой</span>
+            </button>
+          )}
         </div>
       )}
     </div>

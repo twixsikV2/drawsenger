@@ -186,7 +186,7 @@ export const searchUser = async (query: string) => {
 };
 
 // Создать приватный чат с пользователем
-export const createPrivateChat = async (userId: string, otherUserId: string, otherUserName: string): Promise<Chat | null> => {
+export const createPrivateChat = async (userId: string, otherUserId: string, otherUserName: string): Promise<Chat> => {
   try {
     // Проверяем, есть ли уже чат между этими пользователями
     const snapshot = await get(ref(database, 'chats'));
@@ -209,8 +209,26 @@ export const createPrivateChat = async (userId: string, otherUserId: string, oth
       return existingChat;
     }
     
-    // Не создаем чат здесь - он создастся при первом сообщении через ensurePrivateChatExists
-    return null;
+    // Создаем новый приватный чат
+    const chatsRef = ref(database, 'chats');
+    const newChatRef = push(chatsRef);
+    
+    await set(newChatRef, {
+      name: otherUserName,
+      type: 'private',
+      createdAt: Date.now(),
+      members: [userId, otherUserId],
+      messages: []
+    });
+    
+    return {
+      id: newChatRef.key || '',
+      name: otherUserName,
+      type: 'private',
+      createdAt: Date.now(),
+      members: [userId, otherUserId],
+      messages: []
+    };
   } catch (error: any) {
     throw new Error(error.message);
   }

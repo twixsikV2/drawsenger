@@ -353,6 +353,70 @@ export function MessengerPage({
     }
   };
 
+  const handleManageGroup = (chatId: string) => {
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat || chat.type !== 'group') return;
+
+    const action = prompt('Выбери действие:\n1 - Пригласить пользователя\n2 - Выйти из группы\n3 - Удалить группу\n4 - Изменить имя');
+    
+    if (action === '1') {
+      const userId = prompt('Введи ID пользователя для приглашения:');
+      if (!userId) return;
+      try {
+        const { inviteUserToGroup } = require('../lib/messages');
+        inviteUserToGroup(chatId, userId).then(() => {
+          alert('Пользователь приглашен');
+        });
+      } catch (error) {
+        console.error('Error inviting user:', error);
+        alert('Ошибка приглашения');
+      }
+    } else if (action === '2') {
+      try {
+        const { removeUserFromGroup } = require('../lib/messages');
+        removeUserFromGroup(chatId, userId).then(() => {
+          setChats(chats.filter(c => c.id !== chatId));
+          if (selectedChatId === chatId) {
+            setSelectedChatId(chats.length > 1 ? chats[0].id : '');
+          }
+          alert('Вы вышли из группы');
+        });
+      } catch (error) {
+        console.error('Error leaving group:', error);
+        alert('Ошибка выхода');
+      }
+    } else if (action === '3') {
+      if (confirm('Удалить группу для всех?')) {
+        try {
+          const { deleteGroup } = require('../lib/messages');
+          deleteGroup(chatId).then(() => {
+            setChats(chats.filter(c => c.id !== chatId));
+            if (selectedChatId === chatId) {
+              setSelectedChatId(chats.length > 1 ? chats[0].id : '');
+            }
+            alert('Группа удалена');
+          });
+        } catch (error) {
+          console.error('Error deleting group:', error);
+          alert('Ошибка удаления');
+        }
+      }
+    } else if (action === '4') {
+      const newName = prompt('Введи новое имя группы:');
+      if (!newName) return;
+      try {
+        const { updateGroupName } = require('../lib/messages');
+        updateGroupName(chatId, newName).then(() => {
+          setChats(chats.map(c => c.id === chatId ? { ...c, name: newName } : c));
+          alert('Имя группы изменено');
+        });
+      } catch (error) {
+        console.error('Error updating group name:', error);
+        alert('Ошибка изменения имени');
+      }
+    }
+  };
+
   const handleReplyMessage = (messageId: string) => {
     console.log('Reply message called with:', messageId);
     setReplyingTo({ chatId: selectedChatId, messageId });
@@ -445,13 +509,16 @@ export function MessengerPage({
           </button>
         </div>
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        <button className="create-group-btn" onClick={handleCreateGroup} title="Создать группу">
+          + Группа
+        </button>
         <ChatList
           chats={filteredChats}
           selectedChatId={selectedChatId}
           onSelectChat={setSelectedChatId}
           onDeleteChat={handleDeleteChat}
           onPinChat={handlePinChat}
-          onCreateGroup={handleCreateGroup}
+          onManageGroup={handleManageGroup}
           pinnedChats={pinnedChats}
         />
       </div>
