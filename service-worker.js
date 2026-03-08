@@ -2,7 +2,8 @@ const CACHE_NAME = 'drawsenger-v1';
 const urlsToCache = [
   '/drawsenger/',
   '/drawsenger/index.html',
-  '/drawsenger/icon2.png',
+  '/drawsenger/icon.png',
+  '/drawsenger/icon_android.png',
   '/drawsenger/manifest.json'
 ];
 
