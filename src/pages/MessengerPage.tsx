@@ -565,7 +565,7 @@ export function MessengerPage({
 
   return (
     <div className="messenger-container">
-      <div className="sidebar" ref={sidebarRef} style={{ width: `${sidebarWidth}px`, display: showSidebar ? 'flex' : 'none' }}>
+      <div className={window.innerWidth <= 768 && !showSidebar ? 'sidebar hidden' : 'sidebar'} ref={sidebarRef} style={{ width: `${sidebarWidth}px` }}>
         <div className="sidebar-resizer" onMouseDown={handleMouseDown} />
         <div className="sidebar-header">
           <img src={require('../assets/icon.png')} alt="DrawSenger" className="sidebar-icon" />
@@ -603,7 +603,7 @@ export function MessengerPage({
           blockedUsers={blockedUsers}
         />
       </div>
-      <div className="main-content" style={{ display: !showSidebar ? 'flex' : 'none' }}>
+      <div className={window.innerWidth <= 768 && showSidebar ? 'main-content hidden' : 'main-content'}>
         {selectedChat ? (
           <ChatWindow
             chat={selectedChat}
