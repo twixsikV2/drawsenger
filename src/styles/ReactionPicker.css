@@ -141,3 +141,89 @@
 .reaction-picker-content::-webkit-scrollbar-thumb:hover {
   background: var(--text-primary);
 }
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .reaction-picker {
+    width: 95%;
+    max-width: 350px;
+    max-height: 450px;
+  }
+
+  .reaction-picker-header {
+    padding: 12px;
+  }
+
+  .reaction-picker-header h3 {
+    font-size: 14px;
+  }
+
+  .reaction-picker-tabs {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .tab-btn {
+    font-size: 18px;
+    padding: 3px 6px;
+  }
+
+  .reaction-picker-content {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .reaction-emoji {
+    font-size: 20px;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reaction-picker {
+    width: 98%;
+    max-width: 300px;
+    max-height: 400px;
+  }
+
+  .reaction-picker-header {
+    padding: 10px;
+  }
+
+  .reaction-picker-header h3 {
+    font-size: 13px;
+  }
+
+  .close-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+  }
+
+  .reaction-picker-tabs {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    font-size: 16px;
+    padding: 2px 4px;
+  }
+
+  .reaction-picker-content {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    padding: 10px;
+  }
+
+  .reaction-emoji {
+    font-size: 18px;
+    padding: 4px;
+  }
+
+  .reaction-emoji:hover {
+    transform: scale(1.1);
+  }
+}

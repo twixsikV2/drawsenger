@@ -164,3 +164,154 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .user-search-modal {
+    width: 95%;
+    max-width: 350px;
+    padding: 16px;
+  }
+
+  .user-search-header {
+    margin-bottom: 16px;
+  }
+
+  .user-search-header h3 {
+    font-size: 14px;
+  }
+
+  .user-search-form {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .search-input-wrapper {
+    gap: 6px;
+    padding: 6px 10px;
+  }
+
+  .search-input-wrapper input {
+    font-size: 12px;
+  }
+
+  .user-search-form button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .search-error {
+    padding: 8px 10px;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .search-result {
+    padding: 10px;
+  }
+
+  .result-username {
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+
+  .result-id {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+
+  .result-email {
+    font-size: 11px;
+  }
+
+  .add-contact-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+    margin-left: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-search-overlay {
+    align-items: flex-end;
+  }
+
+  .user-search-modal {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .user-search-header {
+    margin-bottom: 12px;
+  }
+
+  .user-search-header h3 {
+    font-size: 13px;
+  }
+
+  .user-search-header .close-btn {
+    font-size: 18px;
+  }
+
+  .user-search-form {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .search-input-wrapper {
+    gap: 4px;
+    padding: 4px 8px;
+  }
+
+  .search-input-wrapper input {
+    font-size: 11px;
+  }
+
+  .user-search-form button {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .search-error {
+    padding: 6px 8px;
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .search-result {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .result-info {
+    width: 100%;
+  }
+
+  .result-username {
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  .result-id {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .result-email {
+    font-size: 10px;
+  }
+
+  .add-contact-btn {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 10px;
+    margin-left: 0;
+  }
+}

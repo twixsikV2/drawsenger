@@ -41,3 +41,44 @@
   transform: scale(1.15);
   border-color: var(--primary);
 }
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .sticker-picker {
+    max-width: 350px;
+    padding: 12px;
+  }
+
+  .sticker-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .sticker-btn {
+    padding: 10px;
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sticker-picker {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px;
+  }
+
+  .sticker-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .sticker-btn {
+    padding: 8px;
+    font-size: 20px;
+  }
+
+  .sticker-btn:hover {
+    transform: scale(1.1);
+  }
+}

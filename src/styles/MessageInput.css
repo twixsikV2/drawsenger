@@ -174,3 +174,100 @@
   background: #777;
   transform: scale(1.05);
 }
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .message-input {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+
+  .action-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .input-field {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .send-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .voice-recording {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .recording-indicator {
+    font-size: 11px;
+  }
+
+  .recording-time {
+    font-size: 11px;
+    min-width: 30px;
+  }
+
+  .record-stop-btn,
+  .record-cancel-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-input {
+    gap: 4px;
+    padding: 8px 10px;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .input-field {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .send-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .voice-recording {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .recording-indicator {
+    font-size: 10px;
+  }
+
+  .recording-waveform {
+    min-width: 80px;
+    gap: 1px;
+  }
+
+  .recording-wave {
+    width: 2px;
+  }
+
+  .recording-time {
+    font-size: 10px;
+    min-width: 25px;
+  }
+
+  .record-stop-btn,
+  .record-cancel-btn {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+}

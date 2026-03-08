@@ -42,3 +42,35 @@
 .search-input::placeholder {
   color: var(--text-secondary);
 }
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .search-bar {
+    padding: 6px 10px;
+  }
+
+  .search-input-wrapper {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .search-input {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    padding: 4px 8px;
+  }
+
+  .search-input-wrapper {
+    gap: 4px;
+    padding: 4px 6px;
+  }
+
+  .search-input {
+    font-size: 11px;
+  }
+}

@@ -66,3 +66,53 @@
   text-align: right;
   opacity: 0.7;
 }
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .voice-message {
+    gap: 6px;
+  }
+
+  .play-btn {
+    padding: 3px 6px;
+  }
+
+  .voice-waveform {
+    gap: 1px;
+    height: 20px;
+  }
+
+  .wave {
+    width: 1.5px;
+  }
+
+  .voice-time {
+    font-size: 10px;
+    min-width: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .voice-message {
+    gap: 4px;
+  }
+
+  .play-btn {
+    padding: 2px 4px;
+  }
+
+  .voice-waveform {
+    gap: 1px;
+    height: 18px;
+  }
+
+  .wave {
+    width: 1px;
+  }
+
+  .voice-time {
+    font-size: 9px;
+    min-width: 18px;
+  }
+}
