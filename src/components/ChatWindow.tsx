@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageInput } from './MessageInput';
 import { VoiceMessage } from './VoiceMessage';
 import { ReactionPicker } from './ReactionPicker';
-import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon, ZoomInIcon, ZoomOutIcon, DownloadIcon, SmileIcon, ForwardIcon, EditIcon } from './Icons';
+import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon, ZoomInIcon, ZoomOutIcon, DownloadIcon, EmojiReactionsIcon, ForwardIcon, EditIcon } from './Icons';
 import { Message, Chat, addReaction, removeReaction, editMessage } from '../lib/messages';
 import '../styles/ChatWindow.css';
 
@@ -455,7 +455,7 @@ export function ChatWindow({
                   onClick={() => setReactionPickerMessageId(message.id)}
                   title="Добавить реакцию"
                 >
-                  <SmileIcon size={14} />
+                  <EmojiReactionsIcon size={14} />
                 </button>
               )}
             </div>
@@ -541,7 +541,7 @@ export function ChatWindow({
                   setContextMenu(null);
                 }}
               >
-                <SmileIcon size={16} />
+                <EmojiReactionsIcon size={16} />
                 <span>Реакция</span>
               </button>
               <div className="context-menu-divider" />

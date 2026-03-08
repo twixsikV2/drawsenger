@@ -246,10 +246,11 @@ export const SmileIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
 
 export const EmojiReactionsIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-    <circle cx="9" cy="9" r="1" fill={color} />
-    <circle cx="15" cy="9" r="1" fill={color} />
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8 13s1.5 2 4 2 4-2 4-2" />
+    <circle cx="9" cy="9" r="0.8" fill={color} />
+    <circle cx="15" cy="9" r="0.8" fill={color} />
+    <path d="M6 6l-1.5-1.5M18 6l1.5-1.5M6 18l-1.5 1.5M18 18l1.5 1.5" strokeLinecap="round" />
   </svg>
 );
 
