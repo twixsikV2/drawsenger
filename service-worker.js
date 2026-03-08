@@ -4,7 +4,6 @@ const urlsToCache = [
   '/drawsenger/index.html',
   '/drawsenger/icon.png',
   '/drawsenger/icon_android.png',
-  '/drawsenger/notification.mp3',
   '/drawsenger/manifest.json'
 ];
 
