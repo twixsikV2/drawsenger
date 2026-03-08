@@ -20,6 +20,8 @@ html, body {
 html {
   background: #0a0a0a;
 }
+
+:root {
   --primary: #667eea;
   --primary-dark: #5568d3;
   --primary-rgb: 102, 126, 234;
