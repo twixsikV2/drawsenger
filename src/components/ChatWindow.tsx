@@ -21,6 +21,7 @@ interface ChatWindowProps {
   onCancelReply?: () => void;
   onCall: () => void;
   onRecall?: () => void;
+  onBackToChats?: () => void;
 }
 
 export function ChatWindow({
@@ -38,6 +39,7 @@ export function ChatWindow({
   onCancelReply,
   onCall,
   onRecall,
+  onBackToChats,
 }: ChatWindowProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -287,6 +289,24 @@ export function ChatWindow({
           </>
         ) : (
           <>
+            {window.innerWidth <= 768 && onBackToChats && (
+              <button 
+                className="back-to-chats-btn"
+                onClick={onBackToChats}
+                title="Вернуться к чатам"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  padding: '6px 8px',
+                  fontSize: '18px',
+                  marginRight: '8px'
+                }}
+              >
+                ←
+              </button>
+            )}
             <h2>{chat.name}</h2>
             <div className="header-actions">
               {showSearch ? (

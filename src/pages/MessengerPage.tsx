@@ -605,45 +605,23 @@ export function MessengerPage({
       </div>
       <div className="main-content" style={{ display: !showSidebar ? 'flex' : 'none' }}>
         {selectedChat ? (
-          <>
-            {window.innerWidth <= 768 && (
-              <button 
-                className="back-to-chats-btn"
-                onClick={() => setShowSidebar(true)}
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 12,
-                  background: 'var(--primary)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  padding: '6px 12px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  zIndex: 10
-                }}
-              >
-                ← Назад
-              </button>
-            )}
-            <ChatWindow
-              chat={selectedChat}
-              userId={userId}
-              onSendMessage={handleSendMessage}
-              onSendSticker={handleSendSticker}
-              onSendVoice={handleSendVoice}
-              onSendPhoto={handleSendPhoto}
-              onDeleteMessage={handleDeleteMessage}
-              onPinMessage={handlePinMessage}
-              onReplyMessage={handleReplyMessage}
-              pinnedMessageId={pinnedMessages.get(selectedChatId)}
-              replyingTo={replyingTo?.chatId === selectedChatId ? replyingTo : null}
-              onCancelReply={() => setReplyingTo(null)}
-              onCall={handleCall}
-              onRecall={handleCall}
-            />
-          </>
+          <ChatWindow
+            chat={selectedChat}
+            userId={userId}
+            onSendMessage={handleSendMessage}
+            onSendSticker={handleSendSticker}
+            onSendVoice={handleSendVoice}
+            onSendPhoto={handleSendPhoto}
+            onDeleteMessage={handleDeleteMessage}
+            onPinMessage={handlePinMessage}
+            onReplyMessage={handleReplyMessage}
+            pinnedMessageId={pinnedMessages.get(selectedChatId)}
+            replyingTo={replyingTo?.chatId === selectedChatId ? replyingTo : null}
+            onCancelReply={() => setReplyingTo(null)}
+            onCall={handleCall}
+            onRecall={handleCall}
+            onBackToChats={() => setShowSidebar(true)}
+          />
         ) : (
           <div className="no-chat">Выберите чат</div>
         )}
