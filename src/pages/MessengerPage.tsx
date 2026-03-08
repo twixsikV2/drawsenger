@@ -106,6 +106,18 @@ export function MessengerPage({
   }, [userId]);
 
   useEffect(() => {
+    // Обработчик для Android back button
+    const handleBackButton = () => {
+      if (window.innerWidth <= 768 && !showSidebar) {
+        setShowSidebar(true);
+      }
+    };
+
+    document.addEventListener('backbutton', handleBackButton);
+    return () => document.removeEventListener('backbutton', handleBackButton);
+  }, [showSidebar]);
+
+  useEffect(() => {
     const unsubscribe = listenToUserChats(userId, async (firebaseChats) => {
       try {
         const chatsWithMessages = await Promise.all(

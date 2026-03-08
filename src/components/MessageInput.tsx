@@ -214,6 +214,7 @@ export function MessageInput({ onSendMessage, onSendSticker, onSendVoice, onSend
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
           placeholder="Сообщение..."
           className="input-field"
+          autoComplete="off"
         />
         <button
           type="button"
