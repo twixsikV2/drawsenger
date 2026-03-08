@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { MessageInput } from './MessageInput';
 import { VoiceMessage } from './VoiceMessage';
-import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon, ZoomInIcon, ZoomOutIcon, DownloadIcon } from './Icons';
-import { Message, Chat } from '../lib/messages';
+import { ReactionPicker } from './ReactionPicker';
+import { PhoneIcon, DeleteIcon, CheckSquareIcon, StarIcon, ReplyIcon, SearchIcon, ChevronUpIcon, ChevronDownIcon, StarFilledIcon, PhotoIcon, ZoomInIcon, ZoomOutIcon, DownloadIcon, SmileIcon, ForwardIcon, EditIcon } from './Icons';
+import { Message, Chat, addReaction, removeReaction, editMessage } from '../lib/messages';
 import '../styles/ChatWindow.css';
 
 interface ChatWindowProps {
@@ -15,7 +16,6 @@ interface ChatWindowProps {
   onDeleteMessage: (messageId: string, deleteForAll?: boolean) => void;
   onPinMessage?: (messageId: string) => void;
   onReplyMessage?: (messageId: string) => void;
-  onBlockUser?: (userId: string) => void;
   pinnedMessageId?: string;
   replyingTo?: { messageId: string; text?: string } | null;
   onCancelReply?: () => void;
@@ -33,7 +33,6 @@ export function ChatWindow({
   onDeleteMessage,
   onPinMessage,
   onReplyMessage,
-  onBlockUser,
   pinnedMessageId,
   replyingTo,
   onCancelReply,
@@ -51,6 +50,7 @@ export function ChatWindow({
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [showPinned, setShowPinned] = useState(false);
   const [photoModal, setPhotoModal] = useState<{ url: string; scale: number; offsetX?: number; offsetY?: number } | null>(null);
+  const [reactionPickerMessageId, setReactionPickerMessageId] = useState<string | null>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   const isUserScrolling = React.useRef(false);
@@ -146,6 +146,30 @@ export function ChatWindow({
   const handleDeleteClick = (messageId: string, deleteForAll: boolean) => {
     onDeleteMessage(messageId, deleteForAll);
     setContextMenu(null);
+  };
+
+  const handleReaction = async (messageId: string, emoji: string) => {
+    try {
+      const message = chat.messages.find(m => m.id === messageId);
+      if (!message) return;
+      
+      // Запретить реакции на свои сообщения
+      if (message.sender === userId) {
+        alert('Нельзя реагировать на свои сообщения');
+        return;
+      }
+      
+      const hasReacted = message.reactions?.[emoji]?.includes(userId);
+      
+      if (hasReacted) {
+        await removeReaction(chat.id, messageId, emoji, userId);
+      } else {
+        await addReaction(chat.id, messageId, emoji, userId);
+      }
+      setReactionPickerMessageId(null);
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+    }
   };
 
   const toggleMessageSelection = (messageId: string) => {
@@ -335,7 +359,7 @@ export function ChatWindow({
           <div
             key={message.id}
             data-message-id={message.id}
-            className={`message ${message.sender === userId ? 'own' : 'other'} ${selectedMessages.has(message.id) ? 'selected' : ''} ${searchResults.includes(message.id) ? 'search-highlight' : ''} ${searchResults[currentSearchIndex] === message.id ? 'search-active' : ''}`}
+            className={`message ${message.sender === userId ? 'own' : 'other'} ${selectedMessages.has(message.id) ? 'selected' : ''} ${searchResults.includes(message.id) ? 'search-highlight' : ''} ${searchResults[currentSearchIndex] === message.id ? 'search-active' : ''} ${contextMenu?.messageId === message.id ? 'context-active' : ''}`}
             onContextMenu={(e) => !selectionMode && handleContextMenu(e, message.id)}
             onClick={() => selectionMode && toggleMessageSelection(message.id)}
             onMouseEnter={() => { isUserScrolling.current = true; }}
@@ -354,7 +378,31 @@ export function ChatWindow({
               {message.sender !== userId && (
                 <div className="message-sender">{message.senderName}</div>
               )}
-              {message.type === 'text' && <div className="message-text">{message.text}</div>}
+              {message.replyTo && (
+                <div 
+                  className="message-reply-to"
+                  onClick={() => {
+                    const repliedElement = document.querySelector(`[data-message-id="${message.replyTo?.messageId}"]`);
+                    if (repliedElement) {
+                      repliedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      repliedElement.classList.add('highlight-reply');
+                      setTimeout(() => {
+                        repliedElement.classList.remove('highlight-reply');
+                      }, 2000);
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="reply-to-sender">{message.replyTo.senderName}</div>
+                  <div className="reply-to-text">{message.replyTo.text}</div>
+                </div>
+              )}
+              {message.type === 'text' && (
+                <div>
+                  <div className="message-text">{message.text}</div>
+                  {message.isEdited && <div className="message-edited">(отредактировано)</div>}
+                </div>
+              )}
               {message.type === 'sticker' && <div className="message-sticker">{message.stickerId}</div>}
               {message.type === 'photo' && message.photoUrl && (
                 <div className="message-photo-container" onClick={() => setPhotoModal({ url: message.photoUrl!, scale: 1 })}>
@@ -381,6 +429,35 @@ export function ChatWindow({
                 {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 {pinnedMessageId === message.id && <StarFilledIcon size={12} color="var(--primary)" />}
               </div>
+              {message.reactions && Object.keys(message.reactions).length > 0 && (
+                <div className="message-reactions">
+                  {Object.entries(message.reactions).map(([emoji, users]) => (
+                    <button
+                      key={emoji}
+                      className={`reaction-btn ${users.includes(userId) ? 'reacted' : ''}`}
+                      onClick={() => handleReaction(message.id, emoji)}
+                      title={users.join(', ')}
+                    >
+                      {emoji} {users.length}
+                    </button>
+                  ))}
+                  <button
+                    className="reaction-add-btn"
+                    onClick={() => setReactionPickerMessageId(message.id)}
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+              {(!message.reactions || Object.keys(message.reactions).length === 0) && (
+                <button
+                  className="reaction-add-btn-solo"
+                  onClick={() => setReactionPickerMessageId(message.id)}
+                  title="Добавить реакцию"
+                >
+                  <SmileIcon size={14} />
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -390,6 +467,25 @@ export function ChatWindow({
         <button className="scroll-to-bottom-btn" onClick={scrollToBottom}>
           ↓
         </button>
+      )}
+      {replyingTo && (
+        <div className="reply-preview">
+          <div className="reply-preview-content">
+            <div className="reply-preview-label">Ответ на:</div>
+            {chat.messages.find(m => m.id === replyingTo.messageId) && (() => {
+              const msg = chat.messages.find(m => m.id === replyingTo.messageId);
+              let previewText = '[сообщение]';
+              if (msg?.type === 'text') previewText = msg.text || '';
+              else if (msg?.type === 'photo') previewText = 'Изображение (1)';
+              else if (msg?.type === 'voice') previewText = '🎤 Голосовое сообщение';
+              else if (msg?.type === 'sticker') previewText = '😊 Стикер';
+              else if (msg?.type === 'call') previewText = '☎️ Звонок';
+              
+              return <div className="reply-preview-text">{previewText}</div>;
+            })()}
+          </div>
+          <button className="reply-close-btn" onClick={onCancelReply}>✕</button>
+        </div>
       )}
       <MessageInput
         onSendMessage={onSendMessage}
@@ -436,6 +532,21 @@ export function ChatWindow({
             <span>Действия с сообщением</span>
           </div>
           <div className="context-menu-divider" />
+          {chat.messages.find(m => m.id === contextMenu.messageId)?.sender !== userId && (
+            <>
+              <button
+                className="context-menu-item"
+                onClick={() => {
+                  setReactionPickerMessageId(contextMenu.messageId);
+                  setContextMenu(null);
+                }}
+              >
+                <SmileIcon size={16} />
+                <span>Реакция</span>
+              </button>
+              <div className="context-menu-divider" />
+            </>
+          )}
           {onReplyMessage && (
             <button 
               className="context-menu-item"
@@ -449,6 +560,25 @@ export function ChatWindow({
               <span>Ответить</span>
             </button>
           )}
+          <button 
+            className="context-menu-item"
+            onClick={() => {
+              const message = chat.messages.find(m => m.id === contextMenu.messageId);
+              if (message) {
+                const chatId = prompt('Введи ID чата для пересылки:');
+                if (chatId) {
+                  const text = message.type === 'text' ? message.text : `[${message.type}]`;
+                  const forwardText = `Переслано от ${message.senderName}:\n${text}`;
+                  // Здесь можно добавить функцию для отправки в другой чат
+                  alert('Функция пересылки в разработке');
+                }
+              }
+              setContextMenu(null);
+            }}
+          >
+            <ForwardIcon size={16} />
+            <span>Переслать</span>
+          </button>
           {onPinMessage && (
             <button 
               className="context-menu-item"
@@ -466,6 +596,24 @@ export function ChatWindow({
               <span>Закрепить</span>
             </button>
           )}
+          {chat.messages.find(m => m.id === contextMenu.messageId)?.sender === userId && (
+            <button 
+              className="context-menu-item"
+              onClick={() => {
+                const message = chat.messages.find(m => m.id === contextMenu.messageId);
+                if (message?.type === 'text' && message.text) {
+                  const newText = prompt('Редактировать сообщение:', message.text);
+                  if (newText && newText !== message.text) {
+                    editMessage(chat.id, contextMenu.messageId, newText).catch(err => console.error('Error editing:', err));
+                  }
+                }
+                setContextMenu(null);
+              }}
+            >
+              <EditIcon size={16} />
+              <span>Редактировать</span>
+            </button>
+          )}
           <button 
             className="context-menu-item delete-own"
             onClick={() => handleDeleteClick(contextMenu.messageId, false)}
@@ -480,22 +628,13 @@ export function ChatWindow({
             <DeleteIcon size={16} />
             <span>Удалить у всех</span>
           </button>
-          {onBlockUser && chat.type === 'private' && (
-            <button 
-              className="context-menu-item block-user"
-              onClick={() => {
-                const otherUserId = chat.members?.find(id => id !== userId);
-                if (otherUserId) {
-                  onBlockUser(otherUserId);
-                  setContextMenu(null);
-                }
-              }}
-            >
-              <DeleteIcon size={16} />
-              <span>Заблокировать</span>
-            </button>
-          )}
         </div>
+      )}
+      {reactionPickerMessageId && (
+        <ReactionPicker
+          onSelectReaction={(emoji) => handleReaction(reactionPickerMessageId, emoji)}
+          onClose={() => setReactionPickerMessageId(null)}
+        />
       )}
       {photoModal && (
         <div className="photo-modal-overlay" onClick={() => setPhotoModal(null)}>

@@ -6,7 +6,7 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { VideoChat } from '../components/VideoChat';
 import { UserSearch } from '../components/UserSearch';
 import { SettingsIcon, LogoutIcon, UserIcon } from '../components/Icons';
-import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists, listenToUserChats, deleteUserChat, deleteChat, togglePinChat, getPinnedChats, Chat, Message } from '../lib/messages';
+import { sendPhoto, getUserChats, listenToMessages, sendMessage, sendSticker, sendVoiceMessage, deleteMessage, ensurePrivateChatExists, listenToUserChats, deleteUserChat, deleteChat, togglePinChat, getPinnedChats, Chat, Message, initializeFavoritesChat } from '../lib/messages';
 import { getUserUsername } from '../lib/auth';
 import { ref, get, set } from 'firebase/database';
 import { database } from '../lib/firebase';
@@ -32,10 +32,7 @@ export function MessengerPage({
   onThemeChange,
   onFontSizeChange,
 }: MessengerPageProps) {
-  const [chats, setChats] = useState<Chat[]>([
-    { id: '1', name: 'Общий чат', type: 'group', messages: [], createdAt: Date.now(), members: [] },
-    { id: '2', name: 'Личный чат', type: 'private', messages: [], createdAt: Date.now(), members: [] },
-  ]);
+  const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState('1');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -48,6 +45,7 @@ export function MessengerPage({
   const [isScreenShare, setIsScreenShare] = useState(false);
   const [userUsername, setUserUsername] = useState('You');
   const [pinnedChats, setPinnedChats] = useState<string[]>([]);
+  const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const sidebarRef = React.useRef<HTMLDivElement>(null);
 
   const selectedChat = chats.find(c => c.id === selectedChatId);
@@ -64,6 +62,17 @@ export function MessengerPage({
 
     loadUsername();
     
+    // Инициализируем чат "Избранное"
+    const initFavorites = async () => {
+      try {
+        await initializeFavoritesChat(userId);
+      } catch (error) {
+        console.error('Error initializing favorites:', error);
+      }
+    };
+    
+    initFavorites();
+    
     // Загружаем закрепленные чаты
     const loadPinnedChats = async () => {
       try {
@@ -75,6 +84,19 @@ export function MessengerPage({
     };
     
     loadPinnedChats();
+
+    // Загружаем заблокированных пользователей
+    const loadBlockedUsers = async () => {
+      try {
+        const { getBlockedUsers } = await import('../lib/auth');
+        const blocked = await getBlockedUsers(userId);
+        setBlockedUsers(blocked.map((b: any) => typeof b === 'string' ? b : b.id));
+      } catch (error) {
+        console.error('Error loading blocked users:', error);
+      }
+    };
+
+    loadBlockedUsers();
 
     // Запускаем еженедельную очистку больших старых сообщений
     const { scheduleWeeklyCleanup } = require('../lib/imgbb');
@@ -130,9 +152,30 @@ export function MessengerPage({
             });
           })
         );
-        setChats(chatsWithMessages);
-        if (chatsWithMessages.length > 0 && !selectedChatId) {
-          setSelectedChatId(chatsWithMessages[0].id);
+        
+        // Сортируем чаты: "Избранное" в начале, потом остальные
+        const favoritesChat = chatsWithMessages.find(c => c.type === 'favorites');
+        const otherChats = chatsWithMessages.filter(c => c.type !== 'favorites');
+        
+        // Если "Избранное" найдено, используем его, иначе создаём с аватаром
+        let favorites = favoritesChat;
+        if (!favorites) {
+          favorites = {
+            id: 'favorites',
+            name: 'Избранное',
+            type: 'favorites',
+            messages: [],
+            createdAt: Date.now(),
+            members: [],
+            avatarUrl: undefined
+          };
+        }
+        
+        const sortedChats = [favorites, ...otherChats];
+        
+        setChats(sortedChats);
+        if (sortedChats.length > 0 && !selectedChatId) {
+          setSelectedChatId(sortedChats[0].id);
         }
       } catch (error) {
         console.error('Error loading chats:', error);
@@ -201,7 +244,22 @@ export function MessengerPage({
           }
         }
       }
-      await sendMessage(chatId, userId, userUsername, text);
+      
+      // Получаем информацию о reply если есть
+      let replyInfo = undefined;
+      if (replyingTo) {
+        const repliedMessage = selectedChat.messages.find(m => m.id === replyingTo.messageId);
+        if (repliedMessage) {
+          replyInfo = {
+            messageId: replyingTo.messageId,
+            senderName: repliedMessage.senderName,
+            text: repliedMessage.type === 'text' ? (repliedMessage.text || '') : `[${repliedMessage.type}]`
+          };
+        }
+      }
+      
+      await sendMessage(chatId, userId, userUsername, text, replyInfo);
+      setReplyingTo(null);
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -329,24 +387,33 @@ export function MessengerPage({
 
   const handleBlockUser = async (blockedUserId: string) => {
     try {
-      const { blockUser } = await import('../lib/auth');
-      await blockUser(userId, blockedUserId);
-      alert('Пользователь заблокирован');
+      const { blockUser, unblockUser, isUserBlocked } = await import('../lib/auth');
+      const isBlocked = await isUserBlocked(userId, blockedUserId);
+      
+      if (isBlocked) {
+        await unblockUser(userId, blockedUserId);
+        setBlockedUsers(blockedUsers.filter(id => id !== blockedUserId));
+        alert('Пользователь разблокирован');
+      } else {
+        await blockUser(userId, blockedUserId);
+        setBlockedUsers([...blockedUsers, blockedUserId]);
+        alert('Пользователь заблокирован');
+      }
     } catch (error) {
       console.error('Error blocking user:', error);
-      alert('Ошибка блокировки');
+      alert('Ошибка');
     }
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     const groupName = prompt('Введи имя группы:');
     if (!groupName) return;
     
     try {
       const { createGroup } = require('../lib/messages');
-      createGroup(groupName, userId, [userId]).then((group: Chat) => {
-        setChats([...chats, group]);
-      });
+      const group = await createGroup(groupName, userId, [userId]);
+      setChats([...chats, group]);
+      setSelectedChatId(group.id);
     } catch (error) {
       console.error('Error creating group:', error);
       alert('Ошибка создания группы');
@@ -509,17 +576,18 @@ export function MessengerPage({
           </button>
         </div>
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        <button className="create-group-btn" onClick={handleCreateGroup} title="Создать группу">
-          + Группа
-        </button>
         <ChatList
           chats={filteredChats}
           selectedChatId={selectedChatId}
+          userId={userId}
           onSelectChat={setSelectedChatId}
           onDeleteChat={handleDeleteChat}
           onPinChat={handlePinChat}
+          onBlockUser={handleBlockUser}
           onManageGroup={handleManageGroup}
+          onCreateGroup={handleCreateGroup}
           pinnedChats={pinnedChats}
+          blockedUsers={blockedUsers}
         />
       </div>
       <div className="main-content">
@@ -534,7 +602,6 @@ export function MessengerPage({
             onDeleteMessage={handleDeleteMessage}
             onPinMessage={handlePinMessage}
             onReplyMessage={handleReplyMessage}
-            onBlockUser={handleBlockUser}
             pinnedMessageId={pinnedMessages.get(selectedChatId)}
             replyingTo={replyingTo?.chatId === selectedChatId ? replyingTo : null}
             onCancelReply={() => setReplyingTo(null)}

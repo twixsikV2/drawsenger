@@ -8,6 +8,7 @@
 :root {
   --primary: #667eea;
   --primary-dark: #5568d3;
+  --primary-rgb: 102, 126, 234;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;
@@ -30,6 +31,7 @@
 :root.theme-blue {
   --primary: #3b82f6;
   --primary-dark: #2563eb;
+  --primary-rgb: 59, 130, 246;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;
@@ -38,6 +40,7 @@
 :root.theme-green {
   --primary: #10b981;
   --primary-dark: #059669;
+  --primary-rgb: 16, 185, 129;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;
@@ -46,6 +49,7 @@
 :root.theme-purple {
   --primary: #a855f7;
   --primary-dark: #9333ea;
+  --primary-rgb: 168, 85, 247;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;
@@ -54,6 +58,7 @@
 :root.theme-orange {
   --primary: #f97316;
   --primary-dark: #ea580c;
+  --primary-rgb: 249, 115, 22;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;
@@ -62,6 +67,7 @@
 :root.theme-pink {
   --primary: #ec4899;
   --primary-dark: #db2777;
+  --primary-rgb: 236, 72, 153;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;
@@ -70,6 +76,7 @@
 :root.theme-teal {
   --primary: #14b8a6;
   --primary-dark: #0d9488;
+  --primary-rgb: 20, 184, 166;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;
@@ -78,6 +85,7 @@
 :root.theme-light {
   --primary: #667eea;
   --primary-dark: #5568d3;
+  --primary-rgb: 102, 126, 234;
   --bg-light: #0a0a0a;
   --bg-sidebar: #1a1a1a;
   --bg-input: #2a2a2a;

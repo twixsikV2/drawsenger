@@ -46,7 +46,7 @@ export function SettingsPanel({
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [isHidden, setIsHidden] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
+  const [blockedUsers, setBlockedUsers] = useState<{ id: string; username: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -62,7 +62,19 @@ export function SettingsPanel({
     if (!userId) return;
     try {
       const blocked = await getBlockedUsers(userId);
-      setBlockedUsers(blocked);
+      // Загружаем username для каждого заблокированного пользователя
+      const { getUserProfile } = await import('../lib/auth');
+      const blockedWithNames = await Promise.all(
+        blocked.map(async (blockedId) => {
+          try {
+            const profile = await getUserProfile(blockedId);
+            return { id: blockedId, username: profile?.username || blockedId };
+          } catch {
+            return { id: blockedId, username: blockedId };
+          }
+        })
+      );
+      setBlockedUsers(blockedWithNames);
     } catch (error) {
       console.error('Error loading blocked users:', error);
     }
@@ -73,7 +85,7 @@ export function SettingsPanel({
     setLoading(true);
     try {
       await unblockUser(userId, blockedUserId);
-      setBlockedUsers(blockedUsers.filter(id => id !== blockedUserId));
+      setBlockedUsers(blockedUsers.filter(u => u.id !== blockedUserId));
     } catch (error) {
       console.error('Error unblocking user:', error);
       alert('Ошибка разблокировки');
@@ -271,12 +283,12 @@ export function SettingsPanel({
                 {blockedUsers.length === 0 ? (
                   <div className="no-blocked">Нет заблокированных пользователей</div>
                 ) : (
-                  blockedUsers.map(blockedUserId => (
-                    <div key={blockedUserId} className="blocked-user-item">
-                      <div className="blocked-user-id">{blockedUserId}</div>
+                  blockedUsers.map(blockedUser => (
+                    <div key={blockedUser.id} className="blocked-user-item">
+                      <div className="blocked-user-id">{blockedUser.username}</div>
                       <button
                         className="unblock-btn"
-                        onClick={() => handleUnblockUser(blockedUserId)}
+                        onClick={() => handleUnblockUser(blockedUser.id)}
                         disabled={loading}
                       >
                         <DeleteIcon size={16} />

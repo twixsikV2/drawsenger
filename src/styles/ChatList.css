@@ -38,6 +38,10 @@
   font-size: 16px;
 }
 
+.chat-avatar-favorites {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
 .chat-info {
   flex: 1;
   min-width: 0;
@@ -191,17 +195,21 @@
 
 
 .create-group-btn {
-  width: 100%;
-  padding: 10px;
+  width: calc(100% - 20px);
+  padding: 12px;
   background: rgba(102, 126, 234, 0.1);
   border: 1px solid rgba(102, 126, 234, 0.3);
   color: var(--primary);
-  font-size: 14px;
+  font-size: 18px;
   font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  margin-bottom: 8px;
+  margin: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
 }
 
 .create-group-btn:hover {

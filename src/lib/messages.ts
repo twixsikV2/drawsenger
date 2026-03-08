@@ -13,12 +13,22 @@ export interface Message {
   stickerId?: string;
   voiceData?: { duration: number; url: string };
   callDuration?: number;
+  reactions?: { [emoji: string]: string[] }; // emoji -> array of user IDs
+  isEdited?: boolean;
+  editedAt?: number;
+  isRead?: boolean;
+  readAt?: number;
+  replyTo?: {
+    messageId: string;
+    senderName: string;
+    text: string;
+  };
 }
 
 export interface Chat {
   id: string;
   name: string;
-  type: 'private' | 'group' | 'channel';
+  type: 'private' | 'group' | 'channel' | 'favorites';
   createdAt: number;
   members: string[];
   messages: Message[];
@@ -45,7 +55,7 @@ export const createChat = async (chatName: string, chatType: 'private' | 'group'
 };
 
 // Отправить сообщение
-export const sendMessage = async (chatId: string, sender: string, senderName: string, text: string) => {
+export const sendMessage = async (chatId: string, sender: string, senderName: string, text: string, replyTo?: { messageId: string; senderName: string; text: string }) => {
   try {
     // Проверяем блокировку - получаем членов чата
     const chatRef = ref(database, `chats/${chatId}`);
@@ -66,13 +76,19 @@ export const sendMessage = async (chatId: string, sender: string, senderName: st
     const messagesRef = ref(database, `chats/${chatId}/messages`);
     const newMessageRef = push(messagesRef);
     
-    await set(newMessageRef, {
+    const messageData: any = {
       sender,
       senderName,
       text,
       timestamp: Date.now(),
       type: 'text'
-    });
+    };
+    
+    if (replyTo) {
+      messageData.replyTo = replyTo;
+    }
+    
+    await set(newMessageRef, messageData);
 
     // Проверяем размер и удаляем большие старые сообщения если нужно
     const { cleanupLargeMessages } = await import('./imgbb');
@@ -209,20 +225,10 @@ export const createPrivateChat = async (userId: string, otherUserId: string, oth
       return existingChat;
     }
     
-    // Создаем новый приватный чат
-    const chatsRef = ref(database, 'chats');
-    const newChatRef = push(chatsRef);
-    
-    await set(newChatRef, {
-      name: otherUserName,
-      type: 'private',
-      createdAt: Date.now(),
-      members: [userId, otherUserId],
-      messages: []
-    });
-    
+    // Возвращаем локальный объект чата без создания в Firebase
+    // Чат будет создан при отправке первого сообщения
     return {
-      id: newChatRef.key || '',
+      id: `temp_${Date.now()}`,
       name: otherUserName,
       type: 'private',
       createdAt: Date.now(),
@@ -543,6 +549,103 @@ export const updateGroupName = async (chatId: string, newName: string) => {
       ...chat,
       name: newName
     });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Инициализировать чат "Избранное" для пользователя
+export const initializeFavoritesChat = async (userId: string): Promise<string> => {
+  try {
+    // Проверяем, есть ли уже чат "Избранное" для этого пользователя
+    const snapshot = await get(ref(database, 'chats'));
+    let favoritesId: string | null = null;
+    
+    snapshot.forEach((childSnapshot) => {
+      const chat = childSnapshot.val();
+      if (chat.type === 'favorites' && chat.members && chat.members.includes(userId)) {
+        favoritesId = childSnapshot.key || '';
+      }
+    });
+    
+    if (favoritesId) {
+      return favoritesId;
+    }
+    
+    // Создаём новый чат "Избранное"
+    const chatsRef = ref(database, 'chats');
+    const newChatRef = push(chatsRef);
+    
+    await set(newChatRef, {
+      name: 'Избранное',
+      type: 'favorites',
+      createdAt: Date.now(),
+      members: [userId]
+    });
+    
+    return newChatRef.key || '';
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Добавить реакцию на сообщение
+export const addReaction = async (chatId: string, messageId: string, emoji: string, userId: string) => {
+  try {
+    const reactionsRef = ref(database, `chats/${chatId}/messages/${messageId}/reactions/${emoji}`);
+    const snapshot = await get(reactionsRef);
+    const users = snapshot.val() || [];
+    
+    if (!users.includes(userId)) {
+      users.push(userId);
+      await set(reactionsRef, users);
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Удалить реакцию с сообщения
+export const removeReaction = async (chatId: string, messageId: string, emoji: string, userId: string) => {
+  try {
+    const reactionsRef = ref(database, `chats/${chatId}/messages/${messageId}/reactions/${emoji}`);
+    const snapshot = await get(reactionsRef);
+    const users = snapshot.val() || [];
+    
+    const filtered = users.filter((id: string) => id !== userId);
+    if (filtered.length === 0) {
+      await remove(reactionsRef);
+    } else {
+      await set(reactionsRef, filtered);
+    }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Редактировать сообщение
+export const editMessage = async (chatId: string, messageId: string, newText: string) => {
+  try {
+    const messageRef = ref(database, `chats/${chatId}/messages/${messageId}`);
+    const snapshot = await get(messageRef);
+    const message = snapshot.val();
+    
+    await set(messageRef, {
+      ...message,
+      text: newText,
+      isEdited: true,
+      editedAt: Date.now()
+    });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Отметить сообщение как прочитанное
+export const markMessageAsRead = async (chatId: string, messageId: string, userId: string) => {
+  try {
+    const readRef = ref(database, `chats/${chatId}/messages/${messageId}/readBy/${userId}`);
+    await set(readRef, Date.now());
   } catch (error: any) {
     throw new Error(error.message);
   }
