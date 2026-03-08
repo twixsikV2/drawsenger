@@ -13,10 +13,24 @@
     />
     <link rel="icon" href="%PUBLIC_URL%/icon.png" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/icon.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>DrawSenger</title>
   </head>
   <body>
     <noscript>Вам нужно включить JavaScript для работы этого приложения.</noscript>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('%PUBLIC_URL%/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+              console.log('Service Worker registration failed:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

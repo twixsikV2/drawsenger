@@ -1,0 +1,61 @@
+{
+  "name": "DrawSenger - Мессенджер",
+  "short_name": "DrawSenger",
+  "description": "Ламповый интересный мессенджер с рисованием и реакциями",
+  "start_url": "/drawsenger/",
+  "scope": "/drawsenger/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0a",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/drawsenger/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/drawsenger/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/drawsenger/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["productivity", "social"],
+  "screenshots": [
+    {
+      "src": "/drawsenger/icon.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/drawsenger/icon.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Открыть чаты",
+      "short_name": "Чаты",
+      "description": "Открыть список чатов",
+      "url": "/drawsenger/?mode=chats",
+      "icons": [
+        {
+          "src": "/drawsenger/icon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

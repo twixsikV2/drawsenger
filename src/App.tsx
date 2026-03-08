@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthPage } from './pages/AuthPage';
 import { MessengerPage } from './pages/MessengerPage';
+import { InstallPrompt } from './components/InstallPrompt';
 import './styles/App.css';
 
 type Theme = 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'teal';
@@ -57,6 +58,7 @@ export default function App() {
           onFontSizeChange={setFontSize}
         />
       )}
+      <InstallPrompt />
     </div>
   );
 }
