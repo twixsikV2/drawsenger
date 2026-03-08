@@ -46,6 +46,7 @@ export function MessengerPage({
   const [userUsername, setUserUsername] = useState('You');
   const [pinnedChats, setPinnedChats] = useState<string[]>([]);
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
+  const [showSidebar, setShowSidebar] = useState(true);
   const sidebarRef = React.useRef<HTMLDivElement>(null);
 
   const selectedChat = chats.find(c => c.id === selectedChatId);
@@ -529,6 +530,18 @@ export function MessengerPage({
     };
     setChats([...chats, newChat]);
     setSelectedChatId(chatId);
+    // На мобильных скрываем сайдбар при выборе чата
+    if (window.innerWidth <= 768) {
+      setShowSidebar(false);
+    }
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChatId(chatId);
+    // На мобильных скрываем сайдбар при выборе чата
+    if (window.innerWidth <= 768) {
+      setShowSidebar(false);
+    }
   };
 
   const filteredChats = chats.filter(chat =>
@@ -552,7 +565,7 @@ export function MessengerPage({
 
   return (
     <div className="messenger-container">
-      <div className="sidebar" ref={sidebarRef} style={{ width: `${sidebarWidth}px` }}>
+      <div className="sidebar" ref={sidebarRef} style={{ width: `${sidebarWidth}px`, display: showSidebar ? 'flex' : 'none' }}>
         <div className="sidebar-resizer" onMouseDown={handleMouseDown} />
         <div className="sidebar-header">
           <img src={require('../assets/icon.png')} alt="DrawSenger" className="sidebar-icon" />
@@ -580,7 +593,7 @@ export function MessengerPage({
           chats={filteredChats}
           selectedChatId={selectedChatId}
           userId={userId}
-          onSelectChat={setSelectedChatId}
+          onSelectChat={handleSelectChat}
           onDeleteChat={handleDeleteChat}
           onPinChat={handlePinChat}
           onBlockUser={handleBlockUser}
@@ -590,24 +603,47 @@ export function MessengerPage({
           blockedUsers={blockedUsers}
         />
       </div>
-      <div className="main-content">
+      <div className="main-content" style={{ display: !showSidebar ? 'flex' : 'none' }}>
         {selectedChat ? (
-          <ChatWindow
-            chat={selectedChat}
-            userId={userId}
-            onSendMessage={handleSendMessage}
-            onSendSticker={handleSendSticker}
-            onSendVoice={handleSendVoice}
-            onSendPhoto={handleSendPhoto}
-            onDeleteMessage={handleDeleteMessage}
-            onPinMessage={handlePinMessage}
-            onReplyMessage={handleReplyMessage}
-            pinnedMessageId={pinnedMessages.get(selectedChatId)}
-            replyingTo={replyingTo?.chatId === selectedChatId ? replyingTo : null}
-            onCancelReply={() => setReplyingTo(null)}
-            onCall={handleCall}
-            onRecall={handleCall}
-          />
+          <>
+            {window.innerWidth <= 768 && (
+              <button 
+                className="back-to-chats-btn"
+                onClick={() => setShowSidebar(true)}
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  zIndex: 10
+                }}
+              >
+                ← Назад
+              </button>
+            )}
+            <ChatWindow
+              chat={selectedChat}
+              userId={userId}
+              onSendMessage={handleSendMessage}
+              onSendSticker={handleSendSticker}
+              onSendVoice={handleSendVoice}
+              onSendPhoto={handleSendPhoto}
+              onDeleteMessage={handleDeleteMessage}
+              onPinMessage={handlePinMessage}
+              onReplyMessage={handleReplyMessage}
+              pinnedMessageId={pinnedMessages.get(selectedChatId)}
+              replyingTo={replyingTo?.chatId === selectedChatId ? replyingTo : null}
+              onCancelReply={() => setReplyingTo(null)}
+              onCall={handleCall}
+              onRecall={handleCall}
+            />
+          </>
         ) : (
           <div className="no-chat">Выберите чат</div>
         )}
