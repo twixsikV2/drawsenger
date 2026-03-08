@@ -225,10 +225,24 @@ export const createPrivateChat = async (userId: string, otherUserId: string, oth
       return existingChat;
     }
     
-    // Возвращаем локальный объект чата без создания в Firebase
-    // Чат будет создан при отправке первого сообщения
+    // Создаём новый чат в Firebase
+    const chatId = `${userId}_${otherUserId}`;
+    const chatData = {
+      name: otherUserName,
+      type: 'private',
+      createdAt: Date.now(),
+      members: [userId, otherUserId],
+      messages: {}
+    };
+    
+    await set(ref(database, `chats/${chatId}`), chatData);
+    
+    // Добавляем чат в список чатов пользователя
+    await set(ref(database, `userChats/${userId}/${chatId}`), true);
+    await set(ref(database, `userChats/${otherUserId}/${chatId}`), true);
+    
     return {
-      id: `temp_${Date.now()}`,
+      id: chatId,
       name: otherUserName,
       type: 'private',
       createdAt: Date.now(),
