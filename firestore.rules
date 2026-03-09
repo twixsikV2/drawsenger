@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users - только сам пользователь может читать/писать свой профиль
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId || request.auth.uid != null;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+    }
+
+    // Chats - все авторизованные пользователи могут читать
+    match /chats/{chatId} {
+      allow read: if request.auth.uid != null;
+      allow create: if request.auth.uid != null;
+      allow update: if request.auth.uid != null;
+    }
+
+    // Messages - все авторизованные пользователи могут писать
+    match /messages/{messageId} {
+      allow read: if request.auth.uid != null;
+      allow create: if request.auth.uid != null;
+      allow update, delete: if request.auth.uid == resource.data.user_id;
+    }
+
+    // Chat Members
+    match /chat_members/{docId} {
+      allow read, write: if request.auth.uid != null;
+    }
+
+    // Reactions
+    match /reactions/{docId} {
+      allow read, write: if request.auth.uid != null;
+    }
+
+    // Favorites - только сам пользователь
+    match /favorites/{docId} {
+      allow read: if request.auth.uid == resource.data.user_id;
+      allow create: if request.auth.uid == request.resource.data.user_id;
+      allow delete: if request.auth.uid == resource.data.user_id;
+    }
+
+    // Pinned Messages
+    match /pinned_messages/{docId} {
+      allow read, write: if request.auth.uid != null;
+    }
+
+    // Message Replies
+    match /message_replies/{docId} {
+      allow read, write: if request.auth.uid != null;
+    }
+
+    // Blocked Users - только сам пользователь
+    match /blocked_users/{docId} {
+      allow read: if request.auth.uid == resource.data.user_id;
+      allow create: if request.auth.uid == request.resource.data.user_id;
+      allow delete: if request.auth.uid == resource.data.user_id;
+    }
+  }
+}

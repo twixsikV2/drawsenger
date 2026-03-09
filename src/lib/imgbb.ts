@@ -170,60 +170,6 @@ export const cleanupLargeMessages = async (database: any, ref: any, remove: any)
 };
 
 export const scheduleWeeklyCleanup = (database: any, ref: any, remove: any) => {
-  // Функция для удаления больших сообщений старше 5 часов
-  const cleanupOldLargeMessages = async () => {
-    try {
-      const chatsRef = ref(database, 'chats');
-      const snapshot = await new Promise<any>((resolve) => {
-        const listener = chatsRef.on('value', (snap: any) => {
-          chatsRef.off('value', listener);
-          resolve(snap);
-        });
-      });
-
-      if (!snapshot.val()) return;
-
-      const chats = snapshot.val();
-      const fiveHoursAgo = Date.now() - 5 * 60 * 60 * 1000;
-      let deletedCount = 0;
-      let deletedSize = 0;
-
-      // Ищем большие сообщения старше 5 часов
-      for (const chatId in chats) {
-        const messages = chats[chatId].messages || {};
-        for (const msgId in messages) {
-          const msg = messages[msgId];
-          let size = 0;
-          
-          if (msg.photoUrl) {
-            size = msg.photoUrl.length;
-          } else if (msg.voiceData?.url) {
-            size = msg.voiceData.url.length;
-          }
-          
-          // Удаляем если это большое сообщение (фото или голос) и оно старше 5 часов
-          if (size > 0 && msg.timestamp < fiveHoursAgo) {
-            const msgRef = ref(database, `chats/${chatId}/messages/${msgId}`);
-            await remove(msgRef);
-            deletedCount++;
-            deletedSize += size;
-            console.log(`Еженедельная очистка: удалено сообщение (${(size / 1024 / 1024).toFixed(2)}MB)`);
-          }
-        }
-      }
-
-      if (deletedCount > 0) {
-        console.log(`Еженедельная очистка завершена. Удалено ${deletedCount} сообщений (${(deletedSize / 1024 / 1024).toFixed(2)}MB)`);
-      }
-    } catch (error) {
-      console.error('Ошибка при еженедельной очистке:', error);
-    }
-  };
-
-  // Запускаем очистку каждую неделю (7 дней = 604800000 мс)
-  const weekInMs = 7 * 24 * 60 * 60 * 1000;
-  setInterval(cleanupOldLargeMessages, weekInMs);
-  
-  // Также запускаем один раз при инициализации
-  cleanupOldLargeMessages();
+  // Функция отключена - используется Firestore вместо Realtime Database
+  console.log('Weekly cleanup disabled - using Firestore');
 };

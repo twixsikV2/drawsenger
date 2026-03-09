@@ -664,3 +664,63 @@ export const markMessageAsRead = async (chatId: string, messageId: string, userI
     throw new Error(error.message);
   }
 };
+
+// Воспроизвести звук уведомления
+export const playNotificationSound = () => {
+  try {
+    const audio = new Audio('/notification.mp3');
+    audio.volume = 0.5;
+    audio.play().catch((err) => console.log('Could not play sound:', err));
+  } catch (error) {
+    console.error('Error playing notification sound:', error);
+  }
+};
+
+// Отправить push уведомление
+export const sendPushNotification = (
+  title: string,
+  options?: NotificationOptions
+) => {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(title, {
+        icon: '/icon_android.png',
+        badge: '/icon_android.png',
+        ...options,
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  }
+};
+
+// Запросить разрешение на уведомления
+export const requestNotificationPermission = async () => {
+  if ('Notification' in window && Notification.permission === 'default') {
+    try {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      return false;
+    }
+  }
+  return Notification.permission === 'granted';
+};
+
+// Отправить уведомление о новом сообщении
+export const notifyNewMessage = (
+  senderName: string,
+  messageText: string,
+  isMobile: boolean
+) => {
+  if (isMobile) {
+    sendPushNotification(`Новое сообщение от ${senderName}`, {
+      body: messageText.substring(0, 100),
+      tag: 'new-message',
+      requireInteraction: false,
+    });
+  } else {
+    playNotificationSound();
+  }
+};

@@ -99,6 +99,13 @@ export function MessengerPage({
 
     loadBlockedUsers();
 
+    // Запрашиваем разрешение на уведомления
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      const { requestNotificationPermission } = require('../lib/messages');
+      requestNotificationPermission().catch((err: any) => console.log('Notification permission error:', err));
+    }
+
     // Запускаем еженедельную очистку больших старых сообщений
     const { scheduleWeeklyCleanup } = require('../lib/imgbb');
     const { remove } = require('firebase/database');
@@ -200,7 +207,19 @@ export function MessengerPage({
 
   useEffect(() => {
     if (!selectedChatId) return;
+    let lastMessageCount = 0;
     const unsubscribe = listenToMessages(selectedChatId, (messages) => {
+      // Отправляем уведомление только если пришло новое сообщение
+      if (messages.length > lastMessageCount) {
+        const newMessage = messages[messages.length - 1];
+        if (newMessage && newMessage.sender !== userId) {
+          const { notifyNewMessage } = require('../lib/messages');
+          const isMobile = window.innerWidth <= 768;
+          notifyNewMessage(newMessage.senderName, newMessage.text || '[сообщение]', isMobile);
+        }
+      }
+      lastMessageCount = messages.length;
+      
       setChats(prevChats =>
         prevChats.map(chat =>
           chat.id === selectedChatId
@@ -213,7 +232,7 @@ export function MessengerPage({
       );
     });
     return () => unsubscribe();
-  }, [selectedChatId]);
+  }, [selectedChatId, userId]);
 
   useEffect(() => {
     if (!inCall) return;

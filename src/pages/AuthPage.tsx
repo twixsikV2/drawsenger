@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/AuthPage.css';
 import { registerUser, loginUser } from '../lib/auth';
+import { EmailVerification } from '../components/EmailVerification';
 
 interface AuthPageProps {
   onLogin: (userId: string) => void;
@@ -14,6 +15,13 @@ export function AuthPage({ onLogin }: AuthPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const [registrationData, setRegistrationData] = useState<{
+    email: string;
+    password: string;
+    username: string;
+    userId: string;
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,12 +41,17 @@ export function AuthPage({ onLogin }: AuthPageProps) {
           setError('Заполните все поля');
           return;
         }
-        if (password.length < 6) {
-          setError('Пароль должен быть минимум 6 символов');
+        if (password.length < 8) {
+          setError('Пароль должен быть минимум 8 символов с заглавными, строчными буквами, цифрами и спецсимволами');
           return;
         }
-        const user = await registerUser(email, password, username, userId);
-        onLogin(user.uid);
+        
+        const result = await registerUser(email, password, username, userId);
+        
+        if (result.status === 'verification_required') {
+          setRegistrationData({ email, password, username, userId });
+          setVerificationRequired(true);
+        }
       }
     } catch (err: any) {
       setError(err.message);
@@ -46,6 +59,24 @@ export function AuthPage({ onLogin }: AuthPageProps) {
       setLoading(false);
     }
   };
+
+  if (verificationRequired && registrationData) {
+    return (
+      <EmailVerification
+        email={registrationData.email}
+        password={registrationData.password}
+        username={registrationData.username}
+        userId={registrationData.userId}
+        onSuccess={(user) => {
+          onLogin(user.uid);
+        }}
+        onError={(error) => {
+          setError(error);
+          setVerificationRequired(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="auth-container">
