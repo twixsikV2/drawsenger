@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/AuthPage.css';
 import { registerUser, loginUser } from '../lib/auth';
+import { getPasswordRequirements } from '../lib/security';
 import { EmailVerification } from '../components/EmailVerification';
 
 interface AuthPageProps {
@@ -23,6 +24,9 @@ export function AuthPage({ onLogin }: AuthPageProps) {
     userId: string;
   } | null>(null);
 
+  const passwordReqs = getPasswordRequirements(password);
+  const isPasswordValid = Object.values(passwordReqs).every(v => v);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -41,8 +45,9 @@ export function AuthPage({ onLogin }: AuthPageProps) {
           setError('Заполните все поля');
           return;
         }
-        if (password.length < 8) {
-          setError('Пароль должен быть минимум 8 символов с заглавными, строчными буквами, цифрами и спецсимволами');
+        
+        if (!isPasswordValid) {
+          setError('Пароль должен содержать: заглавные, строчные буквы, цифры и спецсимволы (минимум 8 символов)');
           return;
         }
         
@@ -147,8 +152,30 @@ export function AuthPage({ onLogin }: AuthPageProps) {
             className="auth-input"
             disabled={loading}
           />
+          
+          {!isLogin && password && (
+            <div className="password-requirements">
+              <p className="requirements-title">Требования пароля:</p>
+              <div className={`requirement ${passwordReqs.length ? 'met' : 'unmet'}`}>
+                {passwordReqs.length ? '✓' : '✗'} 8-128 символов
+              </div>
+              <div className={`requirement ${passwordReqs.hasUpperCase ? 'met' : 'unmet'}`}>
+                {passwordReqs.hasUpperCase ? '✓' : '✗'} Заглавные буквы (A-Z)
+              </div>
+              <div className={`requirement ${passwordReqs.hasLowerCase ? 'met' : 'unmet'}`}>
+                {passwordReqs.hasLowerCase ? '✓' : '✗'} Строчные буквы (a-z)
+              </div>
+              <div className={`requirement ${passwordReqs.hasNumbers ? 'met' : 'unmet'}`}>
+                {passwordReqs.hasNumbers ? '✓' : '✗'} Цифры (0-9)
+              </div>
+              <div className={`requirement ${passwordReqs.hasSpecialChar ? 'met' : 'unmet'}`}>
+                {passwordReqs.hasSpecialChar ? '✓' : '✗'} Спецсимволы (!@#$%...)
+              </div>
+            </div>
+          )}
+          
           {error && <div className="auth-error">{error}</div>}
-          <button type="submit" className="auth-button" disabled={loading}>
+          <button type="submit" className="auth-button" disabled={loading || (!isLogin && !isPasswordValid)}>
             {loading ? 'Загрузка...' : (isLogin ? 'Вход' : 'Регистрация')}
           </button>
         </form>

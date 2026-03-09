@@ -127,6 +127,17 @@ export const validatePassword = (password: string): boolean => {
   return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
 };
 
+// Получить требования пароля (для отображения пользователю)
+export const getPasswordRequirements = (password: string) => {
+  return {
+    length: password.length >= 8 && password.length <= 128,
+    hasUpperCase: /[A-Z]/.test(password),
+    hasLowerCase: /[a-z]/.test(password),
+    hasNumbers: /\d/.test(password),
+    hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+  };
+};
+
 // Валидация имени пользователя
 export const validateUsername = (username: string): boolean => {
   if (!username || typeof username !== 'string') return false;
@@ -276,12 +287,18 @@ const getClientIP = (): string => {
 // Отправка логов на сервер
 const sendSecurityLogToServer = async (log: SecurityLog): Promise<void> => {
   try {
-    // Отправляем на ваш сервер для анализа
-    await fetch('/api/security-logs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(log)
-    });
+    // В разработке просто логируем в консоль
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[SECURITY LOG]', log);
+      return;
+    }
+    
+    // В продакшене отправляем на ваш сервер для анализа
+    // await fetch('/api/security-logs', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(log)
+    // });
   } catch (error) {
     console.error('Failed to send security log:', error);
   }
