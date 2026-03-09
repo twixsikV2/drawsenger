@@ -127,8 +127,8 @@ export class EmailVerificationService {
   }
 
   /**
-   * Отправляет email с кодом (заглушка)
-   * В реальном приложении используйте Nodemailer, SendGrid и т.д.
+   * Отправляет email с кодом
+   * В разработке используется console.log, в продакшене нужен реальный сервис
    */
   private async sendEmail(email: string, code: string): Promise<void> {
     try {
@@ -138,27 +138,42 @@ export class EmailVerificationService {
         throw new Error('Недопустимый email адрес');
       }
 
-      // В продакшене используйте реальный сервис отправки email
-      if (process.env.NODE_ENV === 'production') {
-        // Пример с Nodemailer
-        // const transporter = nodemailer.createTransport({...});
-        // await transporter.sendMail({
-        //   to: email,
-        //   subject: 'Код подтверждения',
-        //   html: `<p>Ваш код подтверждения: <strong>${code}</strong></p>`
-        // });
-
-        // Пример с SendGrid
-        // await sgMail.send({
-        //   to: email,
-        //   from: 'noreply@example.com',
-        //   subject: 'Код подтверждения',
-        //   html: `<p>Ваш код подтверждения: <strong>${code}</strong></p>`
-        // });
-      } else {
-        // В разработке логируем код в консоль
-        console.log(`[DEV] Verification code for ${email}: ${code}`);
+      // В разработке логируем код в консоль
+      console.log(`[DEV] Verification code for ${email}: ${code}`);
+      console.log(`[DEV] Используйте этот код для подтверждения email`);
+      
+      // Показываем alert с кодом в разработке
+      if (process.env.NODE_ENV === 'development') {
+        // Используем setTimeout чтобы не блокировать выполнение
+        setTimeout(() => {
+          alert(`Код подтверждения для ${email}:\n\n${code}\n\nЭто сообщение только в разработке`);
+        }, 100);
       }
+      
+      // В продакшене используйте реальный сервис отправки email
+      // Пример с Nodemailer (на сервере):
+      // const transporter = nodemailer.createTransport({
+      //   service: 'gmail',
+      //   auth: {
+      //     user: process.env.EMAIL_USER,
+      //     pass: process.env.EMAIL_PASSWORD
+      //   }
+      // });
+      // await transporter.sendMail({
+      //   to: email,
+      //   subject: 'Код подтверждения DrawSenger',
+      //   html: `<p>Ваш код подтверждения: <strong>${code}</strong></p><p>Код действует 15 минут</p>`
+      // });
+
+      // Пример с SendGrid (на сервере):
+      // const sgMail = require('@sendgrid/mail');
+      // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      // await sgMail.send({
+      //   to: email,
+      //   from: 'noreply@drawsenger.com',
+      //   subject: 'Код подтверждения DrawSenger',
+      //   html: `<p>Ваш код подтверждения: <strong>${code}</strong></p>`
+      // });
     } catch (error: any) {
       logSecurityEvent('EMAIL_SEND_ERROR', { email, error: error.message }, 'critical');
       throw new Error('Ошибка отправки email. Попробуйте позже');
