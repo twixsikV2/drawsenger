@@ -1,1 +1,182 @@
-.email-verification-container {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  min-height: 100vh;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  padding: 20px;\n}\n\n.email-verification-card {\n  background: white;\n  border-radius: 12px;\n  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);\n  padding: 40px;\n  max-width: 400px;\n  width: 100%;\n}\n\n.email-verification-card h2 {\n  text-align: center;\n  color: #333;\n  margin-bottom: 10px;\n  font-size: 24px;\n}\n\n.email-info {\n  text-align: center;\n  color: #666;\n  margin-bottom: 5px;\n  font-size: 14px;\n}\n\n.email-address {\n  text-align: center;\n  color: #667eea;\n  font-weight: bold;\n  margin-bottom: 30px;\n  font-size: 16px;\n  word-break: break-all;\n}\n\n.form-group {\n  margin-bottom: 20px;\n}\n\n.form-group label {\n  display: block;\n  margin-bottom: 8px;\n  color: #333;\n  font-weight: 500;\n  font-size: 14px;\n}\n\n.code-input {\n  width: 100%;\n  padding: 12px;\n  border: 2px solid #e0e0e0;\n  border-radius: 8px;\n  font-size: 24px;\n  text-align: center;\n  letter-spacing: 8px;\n  font-weight: bold;\n  transition: border-color 0.3s;\n  box-sizing: border-box;\n}\n\n.code-input:focus {\n  outline: none;\n  border-color: #667eea;\n  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);\n}\n\n.code-input:disabled {\n  background-color: #f5f5f5;\n  cursor: not-allowed;\n}\n\n.error-message {\n  background-color: #fee;\n  color: #c33;\n  padding: 12px;\n  border-radius: 8px;\n  margin-bottom: 15px;\n  font-size: 14px;\n  border-left: 4px solid #c33;\n}\n\n.success-message {\n  background-color: #efe;\n  color: #3c3;\n  padding: 12px;\n  border-radius: 8px;\n  margin-bottom: 15px;\n  font-size: 14px;\n  border-left: 4px solid #3c3;\n}\n\n.verify-button {\n  width: 100%;\n  padding: 12px;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  border: none;\n  border-radius: 8px;\n  font-size: 16px;\n  font-weight: bold;\n  cursor: pointer;\n  transition: transform 0.2s, box-shadow 0.2s;\n  margin-bottom: 20px;\n}\n\n.verify-button:hover:not(:disabled) {\n  transform: translateY(-2px);\n  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);\n}\n\n.verify-button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n.resend-section {\n  text-align: center;\n  padding-top: 20px;\n  border-top: 1px solid #e0e0e0;\n}\n\n.resend-section p {\n  color: #666;\n  font-size: 14px;\n  margin-bottom: 10px;\n}\n\n.resend-button {\n  background: none;\n  border: none;\n  color: #667eea;\n  font-size: 14px;\n  font-weight: bold;\n  cursor: pointer;\n  text-decoration: underline;\n  transition: color 0.2s;\n}\n\n.resend-button:hover:not(:disabled) {\n  color: #764ba2;\n}\n\n.resend-button:disabled {\n  color: #ccc;\n  cursor: not-allowed;\n  text-decoration: none;\n}\n\n.security-info {\n  margin-top: 20px;\n  padding: 12px;\n  background-color: #f0f4ff;\n  border-radius: 8px;\n  text-align: center;\n}\n\n.security-info p {\n  color: #667eea;\n  font-size: 12px;\n  margin: 0;\n}\n\n/* Адаптивный дизайн */\n@media (max-width: 480px) {\n  .email-verification-card {\n    padding: 30px 20px;\n  }\n\n  .email-verification-card h2 {\n    font-size: 20px;\n  }\n\n  .code-input {\n    font-size: 20px;\n    letter-spacing: 6px;\n  }\n}\n
+.email-verification-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.email-verification-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.email-verification-card h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.email-info {
+  text-align: center;
+  color: #666;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.email-address {
+  text-align: center;
+  color: #667eea;
+  font-weight: bold;
+  margin-bottom: 30px;
+  font-size: 16px;
+  word-break: break-all;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.code-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 8px;
+  font-weight: bold;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.code-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.code-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  border-left: 4px solid #c33;
+}
+
+.success-message {
+  background-color: #efe;
+  color: #3c3;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  border-left: 4px solid #3c3;
+}
+
+.verify-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 20px;
+}
+
+.verify-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.verify-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resend-section {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.resend-section p {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.resend-button {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.resend-button:hover:not(:disabled) {
+  color: #764ba2;
+}
+
+.resend-button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.security-info {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #f0f4ff;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.security-info p {
+  color: #667eea;
+  font-size: 12px;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .email-verification-card {
+    padding: 30px 20px;
+  }
+
+  .email-verification-card h2 {
+    font-size: 20px;
+  }
+
+  .code-input {
+    font-size: 20px;
+    letter-spacing: 6px;
+  }
+}

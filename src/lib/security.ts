@@ -148,11 +148,6 @@ export const validateFileSize = (file: File, maxSizeMB: number = 5): boolean => 
   return file.size <= maxBytes;
 };
 
-// Валидация типа файла
-export const validateFileType = (file: File, allowedTypes: string[]): boolean => {
-  return allowedTypes.includes(file.type);
-};
-
 // Защита от Rate Limiting
 export class RateLimiter {
   private attempts: Map<string, number[]> = new Map();
@@ -320,12 +315,6 @@ export const detectNoSQLInjection = (input: string): boolean => {
 
 // ============ ЗАЩИТА ФАЙЛОВ ============
 
-// Валидация размера файла
-export const validateFileSize = (file: File, maxSizeMB: number = 5): boolean => {
-  const maxBytes = maxSizeMB * 1024 * 1024;
-  return file.size <= maxBytes;
-};
-
 // Валидация типа файла с проверкой MIME
 export const validateFileType = (file: File, allowedTypes: string[]): boolean => {
   if (!allowedTypes.includes(file.type)) {
@@ -343,17 +332,17 @@ export const validateFileExtension = (fileName: string, allowedExtensions: strin
 
 // ============ ЗАЩИТА СЕССИИ ============
 
+interface SessionData {
+  userId: string;
+  token: string;
+  createdAt: number;
+  lastActivity: number;
+  ipAddress: string;
+}
+
 export class SessionManager {
   private sessions: Map<string, SessionData> = new Map();
   private sessionTimeout: number = 30 * 60 * 1000; // 30 минут
-
-  interface SessionData {
-    userId: string;
-    token: string;
-    createdAt: number;
-    lastActivity: number;
-    ipAddress: string;
-  }
 
   createSession(userId: string, ipAddress: string): string {
     const token = generateSecureKey();
@@ -404,9 +393,5 @@ export class SessionManager {
 
 // ============ ВАЛИДАЦИЯ ГРУПП ============
 
-// Валидация названия группы
-export const validateGroupName = (name: string): boolean => {
-  if (!name || typeof name !== 'string') return false;
-  if (name.length < 1 || name.length > 100) return false;
-  return /^[a-zA-Z0-9_\s\-]+$/.test(name);
-};
+// Валидация названия группы уже определена выше
+
